@@ -14,14 +14,14 @@ def init_database():
     
     with app.app_context():
         # Eliminar tablas existentes y crear nuevas
-        print("🗑️  Eliminando tablas existentes...")
+        print("Eliminando tablas existentes...")
         db.drop_all()
         
-        print("🏗️  Creando tablas...")
+        print("Creando tablas...")
         db.create_all()
         
         # ==================== ROLES ====================
-        print("👥 Creando roles...")
+        print("Creando roles...")
         roles_data = [
             {'nombre': 'Administrador', 'descripcion': 'Acceso completo al sistema'},
             {'nombre': 'Ventas', 'descripcion': 'Gestión de ventas y pedidos'},
@@ -34,10 +34,10 @@ def init_database():
             db.session.add(rol)
         
         db.session.commit()
-        print(f"   ✅ {len(roles_data)} roles creados")
+        print(f"   {len(roles_data)} roles creados")
         
         # ==================== USUARIOS ====================
-        print("👤 Creando usuarios...")
+        print("Creando usuarios...")
         
         # Obtener roles
         rol_admin = Role.query.filter_by(nombre='Administrador').first()
@@ -60,10 +60,10 @@ def init_database():
             db.session.add(usuario)
         
         db.session.commit()
-        print(f"   ✅ {len(usuarios_data)} usuarios creados")
+        print(f"   {len(usuarios_data)} usuarios creados")
         
         # ==================== CATEGORÍAS ====================
-        print("📁 Creando categorías...")
+        print("Creando categorías...")
         categorias_data = [
             {'nombre': 'Motor', 'descripcion': 'Componentes del motor'},
             {'nombre': 'Transmisión', 'descripcion': 'Sistema de transmisión'},
@@ -80,10 +80,10 @@ def init_database():
             db.session.add(categoria)
         
         db.session.commit()
-        print(f"   ✅ {len(categorias_data)} categorías creadas")
+        print(f"   {len(categorias_data)} categorías creadas")
         
         # ==================== AUTOPARTES ====================
-        print("🔧 Creando autopartes...")
+        print("Creando autopartes...")
         
         # Obtener categorías
         cat_motor = Categoria.query.filter_by(nombre='Motor').first()
@@ -133,10 +133,10 @@ def init_database():
             db.session.add(inventario)
         
         db.session.commit()
-        print(f"   ✅ {len(autopartes_data)} autopartes creadas con inventario")
+        print(f"   {len(autopartes_data)} autopartes creadas con inventario")
         
         # ==================== ESTADOS DE PEDIDO ====================
-        print("📋 Creando estados de pedido...")
+        print("Creando estados de pedido...")
         estados_data = [
             {'nombre': 'Pendiente'},
             {'nombre': 'En Proceso'},
@@ -151,10 +151,10 @@ def init_database():
             db.session.add(estado)
         
         db.session.commit()
-        print(f"   ✅ {len(estados_data)} estados creados")
+        print(f"   {len(estados_data)} estados creados")
         
         # ==================== PEDIDOS DE EJEMPLO ====================
-        print("🛒 Creando pedidos de ejemplo...")
+        print("Creando pedidos de ejemplo...")
         
         usuario_ventas = Usuario.query.filter_by(email='ventas@macuin.com').first()
         estado_pendiente = EstadoPedido.query.filter_by(nombre='Pendiente').first()
@@ -215,34 +215,34 @@ def init_database():
         pedido2.calcular_total()
         
         db.session.commit()
-        print(f"   ✅ 2 pedidos de ejemplo creados")
+        print(f"   {len(pedido2.id if isinstance(pedido2.id, list) else [pedido2.id]) + 1} pedidos de ejemplo creados")
         
         # ==================== RESUMEN ====================
         print("\n" + "="*50)
-        print("✅ Base de datos inicializada correctamente!")
+        print("Base de datos inicializada correctamente!")
         print("="*50)
-        print(f"\n📊 Resumen:")
-        print(f"   • Roles: {Role.query.count()}")
-        print(f"   • Usuarios: {Usuario.query.count()}")
-        print(f"   • Categorías: {Categoria.query.count()}")
-        print(f"   • Autopartes: {Autoparte.query.count()}")
-        print(f"   • Inventarios: {Inventario.query.count()}")
-        print(f"   • Estados: {EstadoPedido.query.count()}")
-        print(f"   • Pedidos: {Pedido.query.count()}")
+        print(f"\nResumen:")
+        print(f"   - Roles: {Role.query.count()}")
+        print(f"   - Usuarios: {Usuario.query.count()}")
+        print(f"   - Categorías: {Categoria.query.count()}")
+        print(f"   - Autopartes: {Autoparte.query.count()}")
+        print(f"   - Inventarios: {Inventario.query.count()}")
+        print(f"   - Estados: {EstadoPedido.query.count()}")
+        print(f"   - Pedidos: {Pedido.query.count()}")
         
-        print(f"\n🔐 Credenciales de acceso:")
+        print(f"\nCredenciales de acceso:")
         print(f"   Administrador:")
-        print(f"   • Email: admin@macuin.com")
-        print(f"   • Contraseña: admin123")
-        print(f"\n   Ventas:")
-        print(f"   • Email: ventas@macuin.com")
-        print(f"   • Contraseña: ventas123")
+        print(f"   - Email: admin@macuin.com")
+        print(f"   - Contraseña: admin123")
+        print(f"\nVentas:")
+        print(f"   - Email: ventas@macuin.com")
+        print(f"   - Contraseña: ventas123")
         print(f"\n   Almacén:")
-        print(f"   • Email: almacen@macuin.com")
-        print(f"   • Contraseña: almacen123")
+        print(f"   - Email: almacen@macuin.com")
+        print(f"   - Contraseña: almacen123")
         print(f"\n   Logística:")
-        print(f"   • Email: logistica@macuin.com")
-        print(f"   • Contraseña: logistica123")
+        print(f"   - Email: logistica@macuin.com")
+        print(f"   - Contraseña: logistica123")
         print("\n" + "="*50)
 
 if __name__ == '__main__':

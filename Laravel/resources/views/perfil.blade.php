@@ -5,7 +5,7 @@
 <div class="profile-container">
 
 <div class="profile-avatar">
-👤
+(Avatar)
 </div>
 
 <div class="profile-name">
@@ -36,12 +36,12 @@ DIANA MARIA URIBE HDZ
 <div class="profile-actions">
 
 <div class="profile-btn">
-<div class="profile-icon">✏</div>
+<div class="profile-icon">Edit</div>
 Editar perfil
 </div>
 
 <div class="profile-btn">
-<div class="profile-icon">🔒</div>
+<div class="profile-icon">Lock</div>
 Cambiar contraseña
 </div>
 

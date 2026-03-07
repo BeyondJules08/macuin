@@ -565,7 +565,87 @@ def create_app(config_name=None):
         db.session.rollback()
         return render_template('errors/500.html'), 500
     
+    # Inicializar datos si es necesario
+    if os.environ.get('INIT_MOCK_DATA') == 'true':
+        with app.app_context():
+            seed_data(db)
+            
     return app
+
+def seed_data(db):
+    """Puebla la base de datos con datos iniciales para visualización"""
+    print("Sembrando datos iniciales...")
+    
+    # Solo sembrar si la base de datos está vacía (o forzar limpieza si se desea)
+    db.create_all()
+    
+    if Usuario.query.first():
+        print("La base de datos ya contiene datos. Omitiendo siembra.")
+        return
+
+    # Roles
+    roles = {
+        'Administrador': Role(nombre='Administrador', descripcion='Acceso completo'),
+        'Ventas': Role(nombre='Ventas', descripcion='Gestión de ventas'),
+        'Almacén': Role(nombre='Almacén', descripcion='Gestión de stock'),
+        'Logística': Role(nombre='Logística', descripcion='Gestión de envíos')
+    }
+    for r in roles.values(): db.session.add(r)
+    db.session.commit()
+
+    # Usuarios
+    admin = Usuario(nombre='Admin Macuin', email='admin@macuin.com', rol_id=roles['Administrador'].id)
+    admin.set_password('admin123')
+    db.session.add(admin)
+    
+    ventas = Usuario(nombre='Juan Ventas', email='ventas@macuin.com', rol_id=roles['Ventas'].id)
+    ventas.set_password('ventas123')
+    db.session.add(ventas)
+    
+    db.session.commit()
+
+    # Categorías
+    cats = {
+        'Motor': Categoria(nombre='Motor'),
+        'Frenos': Categoria(nombre='Frenos'),
+        'Suspensión': Categoria(nombre='Suspensión')
+    }
+    for c in cats.values(): db.session.add(c)
+    db.session.commit()
+
+    # Autopartes e Inventario
+    parts_data = [
+        ('Filtro Aceite', cats['Motor'].id, 150.0, 50, 10),
+        ('Pastillas Freno', cats['Frenos'].id, 850.0, 30, 5),
+        ('Amortiguador', cats['Suspensión'].id, 1200.0, 5, 10) # Bajo stock
+    ]
+    
+    for name, cat_id, price, stock, min_stock in parts_data:
+        p = Autoparte(nombre=name, categoria_id=cat_id, precio=price, activo=True)
+        db.session.add(p)
+        db.session.flush()
+        inv = Inventario(autoparte_id=p.id, stock_actual=stock, stock_minimo=min_stock)
+        db.session.add(inv)
+    
+    # Estados
+    status_objs = {}
+    estados = ['Pendiente', 'En Proceso', 'Entregado', 'Cancelado']
+    for e in estados:
+        obj = EstadoPedido(nombre=e)
+        db.session.add(obj)
+        status_objs[e] = obj
+    db.session.commit()
+
+    # Pedido de ejemplo
+    p1 = Pedido(usuario_id=ventas.id, estado_id=status_objs['Pendiente'].id, total=300.0)
+    db.session.add(p1)
+    db.session.commit()
+    
+    dp1 = DetallePedido(pedido_id=p1.id, autoparte_id=1, cantidad=2, precio_unitario=150.0)
+    db.session.add(dp1)
+    db.session.commit()
+
+    print("Datos sembrados exitosamente.")
 
 # Crear la aplicación
 app = create_app()

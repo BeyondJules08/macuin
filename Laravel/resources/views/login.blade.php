@@ -30,7 +30,7 @@ MACUIN
 <div class="login-box">
 
 <div class="login-avatar">
-👤
+(Avatar)
 </div>
 
 <form method="POST" action="/login">
