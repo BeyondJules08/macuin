@@ -615,13 +615,13 @@ def seed_data(db):
 
     # Autopartes e Inventario
     parts_data = [
-        ('Filtro Aceite', cats['Motor'].id, 150.0, 50, 10),
-        ('Pastillas Freno', cats['Frenos'].id, 850.0, 30, 5),
-        ('Amortiguador', cats['Suspensión'].id, 1200.0, 5, 10) # Bajo stock
+        ('Filtro Aceite', cats['Motor'].id, 150.0, 50, 10, 'Filtro de aceite de alta eficiencia para motores a gasolina.'),
+        ('Pastillas Freno', cats['Frenos'].id, 850.0, 30, 5, 'Pastillas de freno cerámicas de larga duración.'),
+        ('Amortiguador', cats['Suspensión'].id, 1200.0, 5, 10, 'Amortiguador reforzado para terrenos difíciles.') # Bajo stock
     ]
     
-    for name, cat_id, price, stock, min_stock in parts_data:
-        p = Autoparte(nombre=name, categoria_id=cat_id, precio=price, activo=True)
+    for name, cat_id, price, stock, min_stock, desc in parts_data:
+        p = Autoparte(nombre=name, categoria_id=cat_id, precio=price, descripcion=desc, activo=True)
         db.session.add(p)
         db.session.flush()
         inv = Inventario(autoparte_id=p.id, stock_actual=stock, stock_minimo=min_stock)

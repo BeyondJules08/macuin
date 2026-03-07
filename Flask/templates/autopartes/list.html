@@ -77,7 +77,13 @@
                     </td>
                     <td class="px-6 py-4">
                         <div class="text-sm font-medium text-gray-900">{{ autoparte.nombre }}</div>
-                        <div class="text-sm text-gray-500">{{ autoparte.descripcion[:50] }}{% if autoparte.descripcion and autoparte.descripcion|length > 50 %}...{% endif %}</div>
+                        <div class="text-sm text-gray-500">
+                            {% if autoparte.descripcion %}
+                                {{ autoparte.descripcion[:50] }}{% if autoparte.descripcion|length > 50 %}...{% endif %}
+                            {% else %}
+                                <span class="text-gray-400 italic">Sin descripción</span>
+                            {% endif %}
+                        </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <span class="inline-block px-2 py-1 text-xs font-semibold rounded bg-blue-100 text-blue-800">

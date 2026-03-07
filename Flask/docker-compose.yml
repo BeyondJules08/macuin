@@ -5,8 +5,8 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - FLASK_ENV=development
-      - INIT_MOCK_DATA=true
-      - DATABASE_URL=sqlite:///:memory:
+      FLASK_ENV: development
+      INIT_MOCK_DATA: "true"
+      DATABASE_URL: "sqlite:///:memory:"
     volumes:
       - .:/app
