@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - MACUIN{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">
+        <i class="fas fa-home mr-2 text-blue-600"></i>
+        Dashboard
+    </h1>
+    <p class="text-gray-600 mt-2">Bienvenido al sistema de gestión de autopartes MACUIN</p>
+</div>
+
+<!-- Estadísticas principales -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600 font-semibold">Total Autopartes</p>
+                <p class="text-3xl font-bold text-gray-900 mt-2">{{ total_autopartes }}</p>
+            </div>
+            <div class="bg-blue-100 rounded-full p-4">
+                <i class="fas fa-cog text-2xl text-blue-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600 font-semibold">Total Pedidos</p>
+                <p class="text-3xl font-bold text-gray-900 mt-2">{{ total_pedidos }}</p>
+            </div>
+            <div class="bg-green-100 rounded-full p-4">
+                <i class="fas fa-shopping-cart text-2xl text-green-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600 font-semibold">Pedidos Pendientes</p>
+                <p class="text-3xl font-bold text-gray-900 mt-2">{{ pedidos_pendientes }}</p>
+            </div>
+            <div class="bg-yellow-100 rounded-full p-4">
+                <i class="fas fa-clock text-2xl text-yellow-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600 font-semibold">Ventas del Mes</p>
+                <p class="text-3xl font-bold text-gray-900 mt-2">${{ "%.2f"|format(ventas_mes) }}</p>
+            </div>
+            <div class="bg-purple-100 rounded-full p-4">
+                <i class="fas fa-dollar-sign text-2xl text-purple-600"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Productos con stock bajo -->
+    <div class="bg-white rounded-lg shadow-md">
+        <div class="p-6 border-b border-gray-200">
+            <h2 class="text-xl font-bold text-gray-900 flex items-center">
+                <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+                Productos con Stock Bajo
+            </h2>
+        </div>
+        <div class="p-6">
+            {% if productos_bajo_stock %}
+                <div class="space-y-4">
+                    {% for autoparte, inventario in productos_bajo_stock %}
+                    <div class="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200">
+                        <div class="flex-1">
+                            <p class="font-semibold text-gray-900">{{ autoparte.nombre }}</p>
+                            <p class="text-sm text-gray-600">{{ autoparte.marca or 'Sin marca' }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-gray-600">Stock Actual</p>
+                            <p class="text-lg font-bold text-red-600">{{ inventario.stock_actual }}</p>
+                            <p class="text-xs text-gray-500">Mínimo: {{ inventario.stock_minimo }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <a href="{{ url_for('inventario_list', bajo_stock=True) }}" 
+                   class="block mt-4 text-center text-blue-600 hover:text-blue-800 font-medium">
+                    Ver todos los productos con stock bajo →
+                </a>
+            {% else %}
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-check-circle text-4xl text-green-500 mb-2"></i>
+                    <p>No hay productos con stock bajo</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Pedidos recientes -->
+    <div class="bg-white rounded-lg shadow-md">
+        <div class="p-6 border-b border-gray-200">
+            <h2 class="text-xl font-bold text-gray-900 flex items-center">
+                <i class="fas fa-history text-blue-500 mr-2"></i>
+                Pedidos Recientes
+            </h2>
+        </div>
+        <div class="p-6">
+            {% if pedidos_recientes %}
+                <div class="space-y-4">
+                    {% for pedido in pedidos_recientes %}
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition">
+                        <div class="flex-1">
+                            <p class="font-semibold text-gray-900">Pedido #{{ pedido.id }}</p>
+                            <p class="text-sm text-gray-600">{{ pedido.usuario.nombre }}</p>
+                            <p class="text-xs text-gray-500">{{ pedido.fecha_pedido.strftime('%d/%m/%Y %H:%M') }}</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full
+                                {% if pedido.estado.nombre == 'Pendiente' %}bg-yellow-100 text-yellow-800
+                                {% elif pedido.estado.nombre == 'En Proceso' %}bg-blue-100 text-blue-800
+                                {% elif pedido.estado.nombre == 'Entregado' %}bg-green-100 text-green-800
+                                {% elif pedido.estado.nombre == 'Cancelado' %}bg-red-100 text-red-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ pedido.estado.nombre }}
+                            </span>
+                            <p class="text-lg font-bold text-gray-900 mt-2">${{ "%.2f"|format(pedido.total) }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <a href="{{ url_for('pedidos_list') }}" 
+                   class="block mt-4 text-center text-blue-600 hover:text-blue-800 font-medium">
+                    Ver todos los pedidos →
+                </a>
+            {% else %}
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-inbox text-4xl mb-2"></i>
+                    <p>No hay pedidos registrados</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Enlaces rápidos -->
+<div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+    <a href="{{ url_for('autopartes_list') }}" 
+       class="block bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border-t-4 border-blue-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900">Gestionar Autopartes</h3>
+                <p class="text-sm text-gray-600 mt-1">Ver y administrar catálogo</p>
+            </div>
+            <i class="fas fa-cog text-3xl text-blue-500"></i>
+        </div>
+    </a>
+    
+    {% if current_user.rol.nombre in ['Administrador', 'Almacén'] %}
+    <a href="{{ url_for('inventario_list') }}" 
+       class="block bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border-t-4 border-green-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900">Gestionar Inventario</h3>
+                <p class="text-sm text-gray-600 mt-1">Controlar stock y movimientos</p>
+            </div>
+            <i class="fas fa-warehouse text-3xl text-green-500"></i>
+        </div>
+    </a>
+    {% endif %}
+    
+    {% if current_user.rol.nombre in ['Administrador', 'Ventas'] %}
+    <a href="{{ url_for('pedidos_create') }}" 
+       class="block bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border-t-4 border-purple-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900">Crear Pedido</h3>
+                <p class="text-sm text-gray-600 mt-1">Registrar nuevo pedido</p>
+            </div>
+            <i class="fas fa-plus-circle text-3xl text-purple-500"></i>
+        </div>
+    </a>
+    {% endif %}
+</div>
+{% endblock %}

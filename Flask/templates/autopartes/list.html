@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Autopartes - MACUIN{% endblock %}
+
+{% block content %}
+<div class="mb-8 flex items-center justify-between">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900">
+            <i class="fas fa-cog mr-2 text-blue-600"></i>
+            Autopartes
+        </h1>
+        <p class="text-gray-600 mt-2">Gestión del catálogo de productos</p>
+    </div>
+    {% if current_user.rol.nombre in ['Administrador', 'Almacén'] %}
+    <a href="{{ url_for('autopartes_create') }}" 
+       class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors shadow-md">
+        <i class="fas fa-plus mr-2"></i>Nueva Autoparte
+    </a>
+    {% endif %}
+</div>
+
+<!-- Filtros de búsqueda -->
+<div class="bg-white rounded-lg shadow-md p-6 mb-6">
+    <form method="GET" action="{{ url_for('autopartes_list') }}" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Buscar</label>
+            <input type="text" name="search" value="{{ search }}" 
+                   placeholder="Nombre o marca..." 
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
+            <select name="categoria" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option value="">Todas las categorías</option>
+                {% for categoria in categorias %}
+                <option value="{{ categoria.id }}" {% if categoria.id == categoria_id %}selected{% endif %}>
+                    {{ categoria.nombre }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="flex items-end space-x-2">
+            <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors">
+                <i class="fas fa-search mr-2"></i>Buscar
+            </button>
+            <a href="{{ url_for('autopartes_list') }}" 
+               class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors">
+                <i class="fas fa-redo"></i>
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Tabla de autopartes -->
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marca</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                    {% if current_user.rol.nombre in ['Administrador', 'Almacén'] %}
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for autoparte in autopartes.items %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        #{{ autoparte.id }}
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-medium text-gray-900">{{ autoparte.nombre }}</div>
+                        <div class="text-sm text-gray-500">{{ autoparte.descripcion[:50] }}{% if autoparte.descripcion and autoparte.descripcion|length > 50 %}...{% endif %}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <span class="inline-block px-2 py-1 text-xs font-semibold rounded bg-blue-100 text-blue-800">
+                            {{ autoparte.categoria.nombre }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ autoparte.marca or 'N/A' }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                        ${{ "%.2f"|format(autoparte.precio) }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        {% if autoparte.inventario %}
+                            {% if autoparte.inventario.necesita_reposicion %}
+                                <span class="text-red-600 font-semibold">{{ autoparte.inventario.stock_actual }}</span>
+                            {% else %}
+                                <span class="text-green-600 font-semibold">{{ autoparte.inventario.stock_actual }}</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-gray-400">N/A</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if autoparte.activo %}
+                        <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                            <i class="fas fa-check mr-1"></i>Activo
+                        </span>
+                        {% else %}
+                        <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                            <i class="fas fa-times mr-1"></i>Inactivo
+                        </span>
+                        {% endif %}
+                    </td>
+                    {% if current_user.rol.nombre in ['Administrador', 'Almacén'] %}
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                        <a href="{{ url_for('autopartes_edit', id=autoparte.id) }}" 
+                           class="text-blue-600 hover:text-blue-900 mr-3" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        {% if current_user.rol.nombre == 'Administrador' %}
+                        <form method="POST" action="{{ url_for('autopartes_delete', id=autoparte.id) }}" class="inline">
+                            <button type="submit" class="text-red-600 hover:text-red-900" 
+                                    onclick="return confirm('¿Estás seguro de desactivar esta autoparte?')" title="Desactivar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                        <i class="fas fa-inbox text-4xl mb-2"></i>
+                        <p>No se encontraron autopartes</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Paginación -->
+{% if autopartes.pages > 1 %}
+<div class="mt-6 flex justify-center">
+    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+        {% if autopartes.has_prev %}
+        <a href="{{ url_for('autopartes_list', page=autopartes.prev_num, search=search, categoria=categoria_id) }}" 
+           class="relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+            <i class="fas fa-chevron-left"></i>
+        </a>
+        {% endif %}
+        
+        {% for page_num in autopartes.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+                {% if page_num == autopartes.page %}
+                <span class="relative inline-flex items-center px-4 py-2 border border-blue-500 bg-blue-50 text-sm font-medium text-blue-600">
+                    {{ page_num }}
+                </span>
+                {% else %}
+                <a href="{{ url_for('autopartes_list', page=page_num, search=search, categoria=categoria_id) }}" 
+                   class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    {{ page_num }}
+                </a>
+                {% endif %}
+            {% else %}
+                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                    ...
+                </span>
+            {% endif %}
+        {% endfor %}
+        
+        {% if autopartes.has_next %}
+        <a href="{{ url_for('autopartes_list', page=autopartes.next_num, search=search, categoria=categoria_id) }}" 
+           class="relative inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+            <i class="fas fa-chevron-right"></i>
+        </a>
+        {% endif %}
+    </nav>
+</div>
+{% endif %}
+{% endblock %}
