@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Página no encontrada - MACUIN{% endblock %}
+{% block content %}
+<div class="min-h-screen flex items-center justify-center">
+    <div class="text-center">
+        <i class="fas fa-exclamation-triangle text-8xl text-yellow-500 mb-4"></i>
+        <h1 class="text-6xl font-bold text-gray-900 mb-4">404</h1>
+        <p class="text-2xl text-gray-600 mb-8">Página no encontrada</p>
+        <a href="{{ url_for('dashboard') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg">
+            <i class="fas fa-home mr-2"></i>Volver al inicio
+        </a>
+    </div>
+</div>
+{% endblock %}

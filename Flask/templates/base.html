@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MACUIN - Sistema de Autopartes{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb',
+                        secondary: '#64748b',
+                    }
+                }
+            }
+        }
+    </script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-50">
+    {% if current_user.is_authenticated %}
+    <!-- Navegación -->
+    <nav class="bg-blue-600 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="{{ url_for('dashboard') }}" class="flex items-center">
+                        <i class="fas fa-car-side text-2xl mr-2"></i>
+                        <span class="font-bold text-xl">MACUIN</span>
+                    </a>
+                    
+                    <div class="hidden md:flex ml-10 space-x-4">
+                        <a href="{{ url_for('dashboard') }}" class="px-3 py-2 rounded-md hover:bg-blue-700 transition">
+                            <i class="fas fa-home mr-1"></i> Dashboard
+                        </a>
+                        
+                        <a href="{{ url_for('autopartes_list') }}" class="px-3 py-2 rounded-md hover:bg-blue-700 transition">
+                            <i class="fas fa-cog mr-1"></i> Autopartes
+                        </a>
+                        
+                        {% if current_user.rol.nombre in ['Administrador', 'Almacén'] %}
+                        <a href="{{ url_for('inventario_list') }}" class="px-3 py-2 rounded-md hover:bg-blue-700 transition">
+                            <i class="fas fa-warehouse mr-1"></i> Inventario
+                        </a>
+                        {% endif %}
+                        
+                        <a href="{{ url_for('pedidos_list') }}" class="px-3 py-2 rounded-md hover:bg-blue-700 transition">
+                            <i class="fas fa-shopping-cart mr-1"></i> Pedidos
+                        </a>
+                        
+                        {% if current_user.rol.nombre == 'Administrador' %}
+                        <a href="{{ url_for('usuarios_list') }}" class="px-3 py-2 rounded-md hover:bg-blue-700 transition">
+                            <i class="fas fa-users mr-1"></i> Usuarios
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm">
+                        <span class="font-semibold">{{ current_user.nombre }}</span>
+                        <span class="text-blue-200 ml-2">({{ current_user.rol.nombre }})</span>
+                    </div>
+                    <a href="{{ url_for('logout') }}" class="px-4 py-2 bg-blue-700 rounded-md hover:bg-blue-800 transition">
+                        <i class="fas fa-sign-out-alt mr-1"></i> Salir
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Menú móvil -->
+        <div class="md:hidden px-4 pb-3 space-y-1">
+            <a href="{{ url_for('dashboard') }}" class="block px-3 py-2 rounded-md hover:bg-blue-700">Dashboard</a>
+            <a href="{{ url_for('autopartes_list') }}" class="block px-3 py-2 rounded-md hover:bg-blue-700">Autopartes</a>
+            {% if current_user.rol.nombre in ['Administrador', 'Almacén'] %}
+            <a href="{{ url_for('inventario_list') }}" class="block px-3 py-2 rounded-md hover:bg-blue-700">Inventario</a>
+            {% endif %}
+            <a href="{{ url_for('pedidos_list') }}" class="block px-3 py-2 rounded-md hover:bg-blue-700">Pedidos</a>
+            {% if current_user.rol.nombre == 'Administrador' %}
+            <a href="{{ url_for('usuarios_list') }}" class="block px-3 py-2 rounded-md hover:bg-blue-700">Usuarios</a>
+            {% endif %}
+        </div>
+    </nav>
+    {% endif %}
+    
+    <!-- Mensajes Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} bg-{{ 'green' if category == 'success' else 'red' if category == 'danger' else 'yellow' if category == 'warning' else 'blue' }}-100 border border-{{ 'green' if category == 'success' else 'red' if category == 'danger' else 'yellow' if category == 'warning' else 'blue' }}-400 text-{{ 'green' if category == 'success' else 'red' if category == 'danger' else 'yellow' if category == 'warning' else 'blue' }}-700 px-4 py-3 rounded relative mb-4" role="alert">
+                        <span class="block sm:inline">{{ message }}</span>
+                        <button type="button" class="absolute top-0 bottom-0 right-0 px-4 py-3" onclick="this.parentElement.style.display='none'">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <!-- Contenido Principal -->
+    <main class="{% if current_user.is_authenticated %}max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8{% endif %}">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="text-center">
+                <p>&copy; 2024 MACUIN - Sistema de Gestión de Autopartes</p>
+                <p class="text-gray-400 text-sm mt-2">Desarrollado para personal interno</p>
+            </div>
+        </div>
+    </footer>
+    
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>
