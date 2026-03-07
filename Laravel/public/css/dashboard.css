@@ -1,0 +1,540 @@
+body{
+margin:0;
+font-family:Inter, sans-serif;
+background:#ffffff;
+}
+
+/* HEADER */
+
+.topbar{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:98px;
+background:rgba(213,212,212,0.92);
+display:flex;
+justify-content:flex-end;
+align-items:center;
+padding-right:40px;
+z-index:10;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+position:fixed;
+left:0;
+top:0;
+width:248px;
+height:100vh;
+background:rgba(194,194,194,0.92);
+padding-top:120px;
+text-align:center;
+}
+
+.sidebar a{
+display:block;
+width:220px;
+margin:20px auto;
+padding:10px;
+background:rgba(255,255,255,0.55);
+border-radius:10px;
+text-decoration:none;
+color:#000;
+font-family:'Inknut Antiqua';
+font-weight:600;
+}
+
+/* CONTENIDO */
+
+.content{
+margin-left:260px;
+padding-top:120px;
+padding-left:40px;
+padding-right:40px;
+}
+
+/* BANNER BIENVENIDOS */
+
+.banner{
+width:585px;
+height:165px;
+margin:auto;
+background:#D9D9D9;
+border-radius:20px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:40px;
+font-weight:bold;
+}
+
+/* TARJETAS */
+
+.cards{
+display:flex;
+justify-content:space-between;
+margin-top:40px;
+}
+
+.card-box{
+background:rgba(223,224,243,0.83);
+border-radius:25px;
+padding:15px 40px;
+font-weight:bold;
+text-align:center;
+width:30%;
+}
+
+/* TABLA */
+
+.orders-container{
+margin-top:40px;
+background:rgba(223,224,243,0.5);
+padding:20px;
+border-radius:25px;
+}
+
+.orders-title{
+text-align:center;
+font-family:'Heebo';
+font-size:40px;
+font-weight:700;
+margin-bottom:20px;
+}
+
+.orders-table{
+width:100%;
+border-collapse:collapse;
+background:white;
+}
+
+.orders-table th{
+background:rgba(223,224,243,0.83);
+padding:15px;
+font-family:'Inknut Antiqua';
+}
+
+.orders-table td{
+padding:15px;
+text-align:center;
+border-top:1px solid #ddd;
+}
+
+.btn-view{
+background:rgba(223,224,243,0.83);
+border:none;
+border-radius:25px;
+padding:10px 15px;
+cursor:pointer;
+}
+
+
+/* ===== CATEGORIAS ===== */
+
+.catalog-categories{
+display:flex;
+justify-content:space-between;
+margin-top:20px;
+}
+
+.category-card{
+width:30%;
+height:150px;
+background:rgba(244,244,246,0.83);
+border-radius:25px;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+font-weight:bold;
+font-size:20px;
+}
+
+
+/* ===== FILTRO ===== */
+
+.catalog-filter{
+margin-top:30px;
+background:rgba(223,224,243,0.83);
+padding:15px;
+border-radius:25px;
+display:flex;
+gap:20px;
+align-items:center;
+}
+
+.catalog-filter input,
+.catalog-filter select{
+background:rgba(107,150,174,0.35);
+border:none;
+padding:8px;
+border-radius:10px;
+}
+
+.btn-filter{
+background:#6B96AE;
+border:none;
+padding:8px 20px;
+border-radius:10px;
+cursor:pointer;
+}
+
+
+/* ===== TABLA ===== */
+
+.catalog-table{
+margin-top:20px;
+background:rgba(223,224,243,0.5);
+padding:20px;
+border-radius:25px;
+}
+
+.catalog-table table{
+width:100%;
+border-collapse:collapse;
+background:white;
+border-radius:25px;
+overflow:hidden;
+}
+
+.catalog-table th{
+background:rgba(223,224,243,0.83);
+padding:12px;
+font-family:'Inknut Antiqua';
+}
+
+.catalog-table td{
+padding:12px;
+text-align:center;
+border-top:1px solid #ddd;
+}
+
+
+/* ===== TARJETAS PEDIDOS ===== */
+
+.orders-stats{
+display:flex;
+justify-content:space-between;
+margin-top:30px;
+}
+
+.stat-card{
+width:30%;
+height:150px;
+background:#F6F6F8;
+border-radius:25px;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+font-weight:bold;
+font-size:18px;
+}
+
+
+/* ===== FILTROS PEDIDOS ===== */
+
+.orders-filter{
+margin-top:30px;
+background:#F6F6F8;
+padding:15px;
+border-radius:25px;
+display:flex;
+gap:20px;
+align-items:center;
+}
+
+.orders-filter input,
+.orders-filter select{
+background:#EFEFF3;
+border:none;
+padding:8px;
+border-radius:10px;
+}
+
+.orders-filter button{
+background:#6B96AE;
+border:none;
+padding:8px 20px;
+border-radius:10px;
+cursor:pointer;
+}
+
+
+/* ===== TABLA PEDIDOS ===== */
+
+.orders-table-container{
+margin-top:20px;
+background:#F6F6F8;
+padding:20px;
+border-radius:25px;
+}
+
+.orders-table{
+width:100%;
+border-collapse:collapse;
+background:white;
+border-radius:25px;
+overflow:hidden;
+}
+
+.orders-table th{
+background:#DBDBDB;
+padding:12px;
+font-family:'Inknut Antiqua';
+}
+
+.orders-table td{
+padding:12px;
+text-align:center;
+border-top:1px solid #ddd;
+}
+
+.action-btn{
+border:none;
+background:transparent;
+cursor:pointer;
+font-size:16px;
+margin:0 5px;
+}
+
+/* ===== PERFIL ===== */
+
+.profile-container{
+display:flex;
+flex-direction:column;
+align-items:center;
+margin-top:40px;
+}
+
+/* FOTO PERFIL */
+
+.profile-avatar{
+width:250px;
+height:250px;
+border-radius:50%;
+background:rgba(217,217,217,0.32);
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:120px;
+margin-bottom:20px;
+}
+
+/* NOMBRE */
+
+.profile-name{
+font-size:32px;
+font-weight:bold;
+margin-bottom:30px;
+}
+
+/* DATOS PERFIL */
+
+.profile-info{
+width:600px;
+display:flex;
+flex-direction:column;
+gap:15px;
+}
+
+.profile-row{
+background:rgba(217,217,217,0.37);
+padding:12px 20px;
+border-radius:50px;
+display:flex;
+justify-content:space-between;
+font-weight:bold;
+}
+
+/* ACCIONES */
+
+.profile-actions{
+display:flex;
+justify-content:space-between;
+width:600px;
+margin-top:40px;
+}
+
+.profile-btn{
+display:flex;
+align-items:center;
+gap:10px;
+font-size:20px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.profile-icon{
+width:50px;
+height:50px;
+border-radius:50%;
+background:rgba(217,217,217,0.37);
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:22px;
+}
+
+/* ===== LOGIN ===== */
+
+.login-container{
+display:flex;
+height:100vh;
+align-items:center;
+justify-content:space-between;
+padding:0 120px;
+}
+
+/* LADO IZQUIERDO */
+
+.login-left{
+display:flex;
+flex-direction:column;
+align-items:center;
+gap:40px;
+}
+
+.login-logo{
+background:rgba(213,212,212,0.55);
+padding:20px 60px;
+border-radius:20px;
+font-size:40px;
+font-weight:bold;
+}
+
+.login-gear{
+width:300px;
+}
+
+/* LADO DERECHO */
+
+.login-box{
+width:450px;
+background:rgba(213,212,212,0.92);
+padding:60px 50px;
+border-radius:10px;
+display:flex;
+flex-direction:column;
+align-items:center;
+}
+
+.login-avatar{
+font-size:120px;
+margin-bottom:20px;
+}
+
+.login-box label{
+font-weight:bold;
+margin-top:15px;
+}
+
+.login-box input{
+width:100%;
+padding:10px;
+border:none;
+border-radius:10px;
+margin-top:5px;
+background:rgba(255,255,255,0.55);
+}
+
+.login-forgot{
+margin-top:15px;
+font-size:12px;
+text-decoration:underline;
+cursor:pointer;
+}
+
+.login-btn{
+margin-top:20px;
+width:100%;
+padding:12px;
+border:none;
+border-radius:10px;
+background:#6B96AE;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+
+/* ===== DASHBOARD ===== */
+
+.dashboard-container{
+margin-top:20px;
+}
+
+/* BIENVENIDOS */
+
+.welcome-banner{
+width:550px;
+margin:auto;
+background:#D9D9D9;
+border-radius:20px;
+padding:20px;
+display:flex;
+align-items:center;
+justify-content:center;
+gap:20px;
+font-size:36px;
+font-weight:bold;
+color:#444;
+}
+
+/* TARJETAS */
+
+.dashboard-cards{
+display:flex;
+justify-content:space-between;
+margin-top:40px;
+}
+
+.dashboard-card{
+background:rgba(223,224,243,0.83);
+border-radius:30px;
+padding:15px 30px;
+width:30%;
+text-align:center;
+font-weight:bold;
+}
+
+/* TABLA */
+
+.orders-box{
+margin-top:40px;
+background:rgba(223,224,243,0.5);
+padding:20px;
+border-radius:25px;
+}
+
+.orders-title{
+text-align:center;
+font-size:28px;
+font-weight:bold;
+margin-bottom:20px;
+}
+
+.orders-table{
+width:100%;
+border-collapse:collapse;
+}
+
+.orders-table th{
+background:rgba(223,224,243,0.83);
+padding:15px;
+}
+
+.orders-table td{
+padding:15px;
+text-align:center;
+border-top:1px solid #ddd;
+}
+
+.btn-eye{
+background:rgba(223,224,243,0.83);
+border:none;
+padding:8px 14px;
+border-radius:20px;
+cursor:pointer;
+}

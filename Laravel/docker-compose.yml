@@ -1,0 +1,15 @@
+version: "3"
+
+services:
+
+  laravel:
+
+    build: .
+
+    container_name: macuin_laravel
+
+    ports:
+      - "8000:80"
+
+    volumes:
+      - .:/var/www/html
