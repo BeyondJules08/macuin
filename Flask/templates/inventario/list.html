@@ -13,12 +13,12 @@
             </tr>
         </thead>
         <tbody class="divide-y divide-gray-200">
-            {% for autoparte, inventario in inventarios.items %}
+            {% for item in inventarios.items %}
             <tr>
-                <td class="px-6 py-4"><div class="text-sm font-medium">{{ autoparte.nombre }}</div></td>
-                <td class="px-6 py-4"><span class="text-lg font-bold {% if inventario.necesita_reposicion %}text-red-600{% else %}text-green-600{% endif %}">{{ inventario.stock_actual }}</span></td>
-                <td class="px-6 py-4">{{ inventario.stock_minimo }}</td>
-                <td class="px-6 py-4 text-center"><a href="{{ url_for('inventario_update', id=inventario.id) }}" class="text-blue-600"><i class="fas fa-edit"></i></a></td>
+                <td class="px-6 py-4"><div class="text-sm font-medium">{{ item.autoparte_nombre }} - {{ item.autoparte_marca }}</div></td>
+                <td class="px-6 py-4"><span class="text-lg font-bold {% if item.necesita_reposicion %}text-red-600{% else %}text-green-600{% endif %}">{{ item.stock_actual }}</span></td>
+                <td class="px-6 py-4">{{ item.stock_minimo }}</td>
+                <td class="px-6 py-4 text-center"><a href="{{ url_for('inventario_update', id=item.id) }}" class="text-blue-600"><i class="fas fa-edit"></i></a></td>
             </tr>
             {% endfor %}
         </tbody>

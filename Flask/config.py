@@ -1,17 +1,21 @@
 import os
 from datetime import timedelta
 
-basedir = os.path.abspath(os.path.dirname(__file__))
-
 class Config:
-    """Configuración base de la aplicación Flask"""
+    """Configuración base de la aplicación Flask
     
+    NOTA: Flask ya NO accede directamente a la base de datos.
+    Toda la comunicación con PostgreSQL se realiza a través de la API FastAPI.
+    Esta configuración se mantiene solo para compatibilidad con extensiones
+    que requieran SQLALCHEMY_DATABASE_URI.
+    """
+
     # Configuración básica
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
-    
-    # Configuración de base de datos - SQLite
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:///' + os.path.join(basedir, 'macuin.db')
+
+    # Configuración de base de datos — PostgreSQL (heredado, no se usa directamente)
+    # La app Flask se comunica con la DB únicamente vía FastAPI (api_client.py)
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://admin:admin123@postgres:5432/macuin_db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Configuración de sesión
