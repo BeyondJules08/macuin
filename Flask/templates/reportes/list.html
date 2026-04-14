@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Reportes - MACUIN{% endblock %}
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">
+        <i class="fas fa-chart-bar mr-2 text-blue-600"></i>Reportes
+    </h1>
+    <p class="text-gray-600 mt-2">Descarga reportes en PDF, Excel o Word</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <!-- Reporte de Ventas -->
+    <div class="bg-white rounded-lg shadow-md p-6 border-t-4 border-green-500">
+        <div class="flex items-center mb-4">
+            <div class="bg-green-100 rounded-full p-3 mr-4">
+                <i class="fas fa-dollar-sign text-2xl text-green-600"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-gray-900">Reporte de Ventas</h2>
+                <p class="text-sm text-gray-500">Pedidos internos y externos con totales</p>
+            </div>
+        </div>
+        <form action="{{ url_for('reporte_descargar', tipo='ventas') }}" method="GET" class="space-y-3">
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-xs text-gray-600 mb-1">Fecha inicio</label>
+                    <input type="date" name="fecha_inicio" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-600 mb-1">Fecha fin</label>
+                    <input type="date" name="fecha_fin" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+            </div>
+            <div class="flex space-x-2">
+                <button type="submit" name="formato" value="pdf" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition">
+                    <i class="fas fa-file-pdf mr-1"></i>PDF
+                </button>
+                <button type="submit" name="formato" value="xlsx" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition">
+                    <i class="fas fa-file-excel mr-1"></i>Excel
+                </button>
+                <button type="submit" name="formato" value="docx" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition">
+                    <i class="fas fa-file-word mr-1"></i>Word
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Reporte de Inventario -->
+    <div class="bg-white rounded-lg shadow-md p-6 border-t-4 border-yellow-500">
+        <div class="flex items-center mb-4">
+            <div class="bg-yellow-100 rounded-full p-3 mr-4">
+                <i class="fas fa-warehouse text-2xl text-yellow-600"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-gray-900">Reporte de Inventario</h2>
+                <p class="text-sm text-gray-500">Stock actual, mínimos y alertas</p>
+            </div>
+        </div>
+        <form action="{{ url_for('reporte_descargar', tipo='inventario') }}" method="GET" class="space-y-3">
+            <div class="flex space-x-2 mt-8">
+                <button type="submit" name="formato" value="pdf" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition">
+                    <i class="fas fa-file-pdf mr-1"></i>PDF
+                </button>
+                <button type="submit" name="formato" value="xlsx" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition">
+                    <i class="fas fa-file-excel mr-1"></i>Excel
+                </button>
+                <button type="submit" name="formato" value="docx" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition">
+                    <i class="fas fa-file-word mr-1"></i>Word
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Reporte de Pedidos -->
+    <div class="bg-white rounded-lg shadow-md p-6 border-t-4 border-purple-500">
+        <div class="flex items-center mb-4">
+            <div class="bg-purple-100 rounded-full p-3 mr-4">
+                <i class="fas fa-shopping-cart text-2xl text-purple-600"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-gray-900">Reporte de Pedidos</h2>
+                <p class="text-sm text-gray-500">Todos los pedidos por estado</p>
+            </div>
+        </div>
+        <form action="{{ url_for('reporte_descargar', tipo='pedidos') }}" method="GET" class="space-y-3">
+            <div>
+                <label class="block text-xs text-gray-600 mb-1">Filtrar por estado (opcional)</label>
+                <select name="estado" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    <option value="">Todos los estados</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="En Proceso">En Proceso</option>
+                    <option value="Entregado">Entregado</option>
+                    <option value="Cancelado">Cancelado</option>
+                </select>
+            </div>
+            <div class="flex space-x-2">
+                <button type="submit" name="formato" value="pdf" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition">
+                    <i class="fas fa-file-pdf mr-1"></i>PDF
+                </button>
+                <button type="submit" name="formato" value="xlsx" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition">
+                    <i class="fas fa-file-excel mr-1"></i>Excel
+                </button>
+                <button type="submit" name="formato" value="docx" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition">
+                    <i class="fas fa-file-word mr-1"></i>Word
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Reporte de Usuarios -->
+    <div class="bg-white rounded-lg shadow-md p-6 border-t-4 border-indigo-500">
+        <div class="flex items-center mb-4">
+            <div class="bg-indigo-100 rounded-full p-3 mr-4">
+                <i class="fas fa-users text-2xl text-indigo-600"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-gray-900">Reporte de Usuarios</h2>
+                <p class="text-sm text-gray-500">Usuarios internos y clientes externos</p>
+            </div>
+        </div>
+        <form action="{{ url_for('reporte_descargar', tipo='usuarios') }}" method="GET" class="space-y-3">
+            <div class="flex space-x-2 mt-8">
+                <button type="submit" name="formato" value="pdf" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition">
+                    <i class="fas fa-file-pdf mr-1"></i>PDF
+                </button>
+                <button type="submit" name="formato" value="xlsx" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition">
+                    <i class="fas fa-file-excel mr-1"></i>Excel
+                </button>
+                <button type="submit" name="formato" value="docx" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition">
+                    <i class="fas fa-file-word mr-1"></i>Word
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Reporte Autopartes Más Vendidas -->
+    <div class="bg-white rounded-lg shadow-md p-6 border-t-4 border-red-500 md:col-span-2">
+        <div class="flex items-center mb-4">
+            <div class="bg-red-100 rounded-full p-3 mr-4">
+                <i class="fas fa-trophy text-2xl text-red-600"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-gray-900">Autopartes Más Vendidas</h2>
+                <p class="text-sm text-gray-500">Ranking de productos por volumen de ventas e ingresos generados</p>
+            </div>
+        </div>
+        <form action="{{ url_for('reporte_descargar', tipo='autopartes-mas-vendidas') }}" method="GET" class="space-y-3">
+            <div class="flex space-x-2">
+                <button type="submit" name="formato" value="pdf" class="bg-red-600 hover:bg-red-700 text-white py-2 px-6 rounded-lg text-sm font-medium transition">
+                    <i class="fas fa-file-pdf mr-1"></i>Descargar PDF
+                </button>
+                <button type="submit" name="formato" value="xlsx" class="bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded-lg text-sm font-medium transition">
+                    <i class="fas fa-file-excel mr-1"></i>Descargar Excel
+                </button>
+                <button type="submit" name="formato" value="docx" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg text-sm font-medium transition">
+                    <i class="fas fa-file-word mr-1"></i>Descargar Word
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

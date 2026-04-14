@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(podman *)",
+      "Bash(sleep *)",
+      "Bash(grep *)"
+    ]
+  },
+  "$version": 3
+}

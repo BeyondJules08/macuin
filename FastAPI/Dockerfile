@@ -7,9 +7,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-EXPOSE 5000
+RUN chmod +x start.sh
 
-ENV FLASK_APP=app.py
-ENV FLASK_ENV=production
+EXPOSE 8080
 
-CMD ["python", "app.py"]
+CMD ["./start.sh"]

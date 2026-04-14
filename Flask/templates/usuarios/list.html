@@ -24,7 +24,15 @@
                     {% if usuario.activo %}<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Activo</span>
                     {% else %}<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Inactivo</span>{% endif %}
                 </td>
-                <td class="px-6 py-4 text-center"><a href="{{ url_for('usuarios_edit', id=usuario.id) }}" class="text-blue-600"><i class="fas fa-edit"></i></a></td>
+                <td class="px-6 py-4 text-center space-x-3">
+                    <a href="{{ url_for('usuarios_edit', id=usuario.id) }}" class="text-blue-600 hover:text-blue-900" title="Editar"><i class="fas fa-edit"></i></a>
+                    <form method="POST" action="{{ url_for('usuarios_delete', id=usuario.id) }}" class="inline">
+                        <button type="submit" class="text-red-600 hover:text-red-900" title="Eliminar"
+                                onclick="return confirm('¿Eliminar al usuario {{ usuario.nombre }}? Esta acción no se puede deshacer.')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

@@ -1,0 +1,96 @@
+services:
+
+  # ─── Base de datos (solo accesible por FastAPI) ────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: macuin_postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: macuin_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - db_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d macuin_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # ─── API Central (FastAPI) ─────────────────────────────────────────
+  fastapi:
+    build:
+      context: ./FastAPI
+    container_name: macuin_fastapi
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgresql://admin:admin123@postgres:5432/macuin_db
+      API_KEY: macuin_api_key_2024
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - db_network      # accede a postgres
+      - app_network     # expone API a Flask y Laravel
+    restart: unless-stopped
+
+  # ─── Sistema Interno (Flask) ───────────────────────────────────────
+  flask:
+    build:
+      context: ./Flask
+    container_name: macuin_flask
+    ports:
+      - "5000:5000"
+    environment:
+      FLASK_ENV: production
+      API_URL: http://fastapi:8080
+      API_KEY: macuin_api_key_2024
+      SECRET_KEY: flask_secret_macuin_2024
+    depends_on:
+      - fastapi
+    networks:
+      - app_network     # solo accede a FastAPI, nunca a postgres
+    restart: unless-stopped
+
+  # ─── Sistema Externo (Laravel) ────────────────────────────────────
+  laravel:
+    build:
+      context: ./Laravel
+    container_name: macuin_laravel
+    ports:
+      - "8000:80"
+    environment:
+      APP_NAME: MACUIN
+      APP_ENV: production
+      APP_KEY: base64:VZdDoS5dVFPbPOVuM7dJQwnOg97JqNKiwiNytXtZ46Y=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost:8000
+      API_URL: http://fastapi:8080
+      API_KEY: macuin_api_key_2024
+      SESSION_DRIVER: file
+    depends_on:
+      - fastapi
+    networks:
+      - app_network     # solo accede a FastAPI, nunca a postgres
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  # Red interna — solo postgres <-> fastapi pueden verse entre sí
+  db_network:
+    internal: true
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+  # Red de aplicación — fastapi, flask y laravel
+  app_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.1.0/24

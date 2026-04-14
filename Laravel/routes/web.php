@@ -1,37 +1,34 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\CatalogoController;
+use App\Http\Controllers\PedidosController;
+use App\Http\Controllers\PerfilController;
 
-Route::get('/', function () {
-    return view('dashboard');
-});
+// ── Rutas públicas ────────────────────────────────────────────────────
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-});
+Route::get('/login',    [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login',   [AuthController::class, 'login']);
+Route::get('/registro', [AuthController::class, 'showRegistro'])->name('registro');
+Route::post('/registro',[AuthController::class, 'registro']);
+Route::get('/logout',   [AuthController::class, 'logout'])->name('logout');
 
-Route::get('/catalogo', function () {
-    return view('catalogo');
-});
+// ── Rutas protegidas (requieren sesión activa) ─────────────────────────
 
-Route::get('/pedidos', function () {
-    return view('pedidos');
-});
+Route::middleware(\App\Http\Middleware\CheckSession::class)->group(function () {
 
-Route::get('/perfil', function () {
-    return view('perfil');
-});
+    Route::get('/',          [DashboardController::class, 'index']);
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-use Illuminate\Http\Request;
+    Route::get('/catalogo',  [CatalogoController::class, 'index'])->name('catalogo');
 
-Route::get('/login', function () {
-    return view('login');
-});
+    Route::get('/pedidos',         [PedidosController::class, 'index'])->name('pedidos');
+    Route::get('/pedidos/crear',   [PedidosController::class, 'crear'])->name('pedidos.crear');
+    Route::post('/pedidos/crear',  [PedidosController::class, 'store'])->name('pedidos.store');
+    Route::get('/pedidos/{id}',    [PedidosController::class, 'detalle'])->name('pedidos.detalle');
 
-Route::post('/login', function (Request $request) {
-    return redirect('/dashboard');
-});
-
-Route::get('/dashboard', function () {
-    return view('dashboard');
+    Route::get('/perfil',         [PerfilController::class, 'index'])->name('perfil');
+    Route::post('/perfil/update', [PerfilController::class, 'update'])->name('perfil.update');
 });
