@@ -11,7 +11,7 @@ from app.data.orm import (
     Pedido, PedidoExterno, Autoparte, Inventario,
     Usuario, Cliente, EstadoPedido, Categoria
 )
-from app.security.auth import verify_api_key
+from app.security.auth import get_current_subject
 
 router = APIRouter(prefix="/v1/reportes", tags=["Reportes"])
 
@@ -158,7 +158,7 @@ async def reporte_ventas(
     fecha_inicio: Optional[date] = Query(None),
     fecha_fin: Optional[date] = Query(None),
     db: Session = Depends(get_db),
-    _: str = Depends(verify_api_key),
+    _claims: dict = Depends(get_current_subject),
 ):
     """Reporte de ventas totales (pedidos internos + externos)"""
     if formato not in FORMATOS:
@@ -211,7 +211,7 @@ async def reporte_ventas(
 async def reporte_inventario(
     formato: str = Query("pdf"),
     db: Session = Depends(get_db),
-    _: str = Depends(verify_api_key),
+    _claims: dict = Depends(get_current_subject),
 ):
     """Reporte de inventario actual"""
     if formato not in FORMATOS:
@@ -242,7 +242,7 @@ async def reporte_pedidos(
     formato: str = Query("pdf"),
     estado_nombre: Optional[str] = Query(None),
     db: Session = Depends(get_db),
-    _: str = Depends(verify_api_key),
+    _claims: dict = Depends(get_current_subject),
 ):
     """Reporte de pedidos por estado"""
     if formato not in FORMATOS:
@@ -289,7 +289,7 @@ async def reporte_pedidos(
 async def reporte_usuarios(
     formato: str = Query("pdf"),
     db: Session = Depends(get_db),
-    _: str = Depends(verify_api_key),
+    _claims: dict = Depends(get_current_subject),
 ):
     """Reporte de usuarios internos y clientes externos"""
     if formato not in FORMATOS:
@@ -328,7 +328,7 @@ async def reporte_usuarios(
 async def reporte_autopartes_mas_vendidas(
     formato: str = Query("pdf"),
     db: Session = Depends(get_db),
-    _: str = Depends(verify_api_key),
+    _claims: dict = Depends(get_current_subject),
 ):
     """Reporte de autopartes más vendidas"""
     if formato not in FORMATOS:

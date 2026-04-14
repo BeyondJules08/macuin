@@ -1,15 +1,47 @@
-"""Cliente HTTP para comunicarse con el FastAPI de MACUIN"""
+"""Cliente HTTP para comunicarse con el FastAPI de MACUIN (OAuth2 + JWT)"""
 import os
 import requests
 from datetime import datetime
 from types import SimpleNamespace
 
 API_URL = os.getenv("API_URL", "http://fastapi:8080")
-API_KEY = os.getenv("API_KEY", "macuin_api_key_2024")
+API_USER = os.getenv("API_USER", "admin@macuin.com")       # internal user email
+API_PASSWORD = os.getenv("API_PASSWORD", "admin123")       # internal user password
 
-_HEADERS = {"X-API-Key": API_KEY, "Content-Type": "application/json"}
+# Token state (module-level, shared across requests)
+_access_token: str | None = None
 
 _DATE_KEYS = {"fecha_pedido", "fecha_registro", "fecha_actualizacion", "fecha"}
+
+
+# ── Token management ──────────────────────────────────────────────────
+
+def _get_token() -> str:
+    """Obtain (or refresh) the JWT token by logging in with API credentials."""
+    global _access_token
+    if _access_token:
+        return _access_token
+
+    r = requests.post(
+        f"{API_URL}/v1/auth/login",
+        headers={"Content-Type": "application/json"},
+        json={"email": API_USER, "password": API_PASSWORD},
+        timeout=10,
+    )
+    r.raise_for_status()
+    data = r.json()
+    _access_token = data["data"]["access_token"]
+    return _access_token
+
+
+def _auth_headers() -> dict:
+    return {"Authorization": f"Bearer {_get_token()}", "Content-Type": "application/json"}
+
+
+def invalidate_token():
+    """Force re-authentication on next request (e.g. after 401)."""
+    global _access_token
+    _access_token = None
 
 
 # ── Conversión dict → objeto ────────────────────────────────────────
@@ -60,44 +92,73 @@ class Pagination:
                 last = num
 
 
-# ── Métodos HTTP ────────────────────────────────────────────────────
+# ── Métodos HTTP con auto-retry on 401 ───────────────────────────────
+
+def _retry_on_401(fn, *args, **kwargs):
+    """Execute an HTTP call; if 401, invalidate token and retry once."""
+    try:
+        return fn(*args, **kwargs)
+    except requests.HTTPError as e:
+        if e.response is not None and e.response.status_code == 401:
+            invalidate_token()
+            return fn(*args, **kwargs)
+        raise
+
 
 def _get(path, params=None):
-    r = requests.get(f"{API_URL}{path}", headers=_HEADERS, params=params, timeout=10)
-    r.raise_for_status()
-    return r.json()
+    def _do():
+        r = requests.get(f"{API_URL}{path}", headers=_auth_headers(), params=params, timeout=10)
+        r.raise_for_status()
+        return r.json()
+    return _retry_on_401(_do)
 
 
 def _post(path, data):
-    r = requests.post(f"{API_URL}{path}", headers=_HEADERS, json=data, timeout=10)
-    r.raise_for_status()
-    return r.json()
+    def _do():
+        r = requests.post(f"{API_URL}{path}", headers=_auth_headers(), json=data, timeout=10)
+        r.raise_for_status()
+        return r.json()
+    return _retry_on_401(_do)
 
 
 def _put(path, data):
-    r = requests.put(f"{API_URL}{path}", headers=_HEADERS, json=data, timeout=10)
-    r.raise_for_status()
-    return r.json()
+    def _do():
+        r = requests.put(f"{API_URL}{path}", headers=_auth_headers(), json=data, timeout=10)
+        r.raise_for_status()
+        return r.json()
+    return _retry_on_401(_do)
 
 
 def _delete(path):
-    r = requests.delete(f"{API_URL}{path}", headers=_HEADERS, timeout=10)
-    r.raise_for_status()
-    return r.json()
+    def _do():
+        r = requests.delete(f"{API_URL}{path}", headers=_auth_headers(), timeout=10)
+        r.raise_for_status()
+        return r.json()
+    return _retry_on_401(_do)
 
 
 def _stream(path, params=None):
     """Retorna el objeto response sin parsear (para descargas binarias)."""
-    r = requests.get(f"{API_URL}{path}", headers=_HEADERS, params=params, stream=True, timeout=30)
-    r.raise_for_status()
-    return r
+    def _do():
+        r = requests.get(f"{API_URL}{path}", headers=_auth_headers(), params=params, stream=True, timeout=30)
+        r.raise_for_status()
+        return r
+    return _retry_on_401(_do)
 
 
 # ── Auth ────────────────────────────────────────────────────────────
 
 def login_usuario(email, password):
+    """Login for Flask user session – returns user data + token."""
     try:
-        return _post("/v1/auth/login", {"email": email, "password": password})
+        r = requests.post(
+            f"{API_URL}/v1/auth/login",
+            headers={"Content-Type": "application/json"},
+            json={"email": email, "password": password},
+            timeout=10,
+        )
+        r.raise_for_status()
+        return r.json()
     except Exception:
         return None
 

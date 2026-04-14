@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.data.db import get_db
 from app.data.orm import Usuario, Role
 from app.models.usuarios import UsuarioCreate, UsuarioUpdate
-from app.security.auth import verify_api_key, hash_password
+from app.security.auth import get_current_subject, hash_password
 
 router = APIRouter(prefix="/v1/usuarios", tags=["Usuarios Internos"])
 
@@ -21,13 +21,13 @@ def _serialize(u: Usuario) -> dict:
 
 
 @router.get("/")
-async def listar_usuarios(db: Session = Depends(get_db), _: str = Depends(verify_api_key)):
+async def listar_usuarios(db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)):
     usuarios = db.query(Usuario).order_by(Usuario.nombre).all()
     return {"status": "200", "total": len(usuarios), "data": [_serialize(u) for u in usuarios]}
 
 
 @router.get("/{id}")
-async def obtener_usuario(id: int, db: Session = Depends(get_db), _: str = Depends(verify_api_key)):
+async def obtener_usuario(id: int, db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)):
     u = db.query(Usuario).filter(Usuario.id == id).first()
     if not u:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
@@ -35,7 +35,7 @@ async def obtener_usuario(id: int, db: Session = Depends(get_db), _: str = Depen
 
 
 @router.post("/")
-async def crear_usuario(payload: UsuarioCreate, db: Session = Depends(get_db), _: str = Depends(verify_api_key)):
+async def crear_usuario(payload: UsuarioCreate, db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)):
     if db.query(Usuario).filter(Usuario.email == payload.email).first():
         raise HTTPException(status_code=400, detail="El email ya está registrado")
     if not db.query(Role).filter(Role.id == payload.rol_id).first():
@@ -55,7 +55,7 @@ async def crear_usuario(payload: UsuarioCreate, db: Session = Depends(get_db), _
 
 @router.put("/{id}")
 async def actualizar_usuario(
-    id: int, payload: UsuarioUpdate, db: Session = Depends(get_db), _: str = Depends(verify_api_key)
+    id: int, payload: UsuarioUpdate, db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)
 ):
     u = db.query(Usuario).filter(Usuario.id == id).first()
     if not u:
@@ -79,7 +79,7 @@ async def actualizar_usuario(
 
 
 @router.delete("/{id}")
-async def eliminar_usuario(id: int, db: Session = Depends(get_db), _: str = Depends(verify_api_key)):
+async def eliminar_usuario(id: int, db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)):
     u = db.query(Usuario).filter(Usuario.id == id).first()
     if not u:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")

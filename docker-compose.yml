@@ -28,7 +28,9 @@ services:
       - "8080:8080"
     environment:
       DATABASE_URL: postgresql://admin:admin123@postgres:5432/macuin_db
-      API_KEY: macuin_api_key_2024
+      JWT_SECRET_KEY: macuin_jwt_super_secret_key_change_in_production_2024
+      JWT_ALGORITHM: HS256
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: "480"
     depends_on:
       postgres:
         condition: service_healthy
@@ -47,7 +49,8 @@ services:
     environment:
       FLASK_ENV: production
       API_URL: http://fastapi:8080
-      API_KEY: macuin_api_key_2024
+      API_USER: admin@macuin.com
+      API_PASSWORD: admin123
       SECRET_KEY: flask_secret_macuin_2024
     depends_on:
       - fastapi
@@ -69,7 +72,6 @@ services:
       APP_DEBUG: "false"
       APP_URL: http://localhost:8000
       API_URL: http://fastapi:8080
-      API_KEY: macuin_api_key_2024
       SESSION_DRIVER: file
     depends_on:
       - fastapi

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.data.db import get_db
 from app.data.orm import Cliente
 from app.models.clientes import ClienteCreate, ClienteUpdate
-from app.security.auth import verify_api_key, hash_password
+from app.security.auth import get_current_subject, hash_password
 
 router = APIRouter(prefix="/v1/clientes", tags=["Clientes Externos"])
 
@@ -21,7 +21,7 @@ def _serialize(c: Cliente) -> dict:
 
 
 @router.post("/registro")
-async def registrar_cliente(payload: ClienteCreate, db: Session = Depends(get_db), _: str = Depends(verify_api_key)):
+async def registrar_cliente(payload: ClienteCreate, db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)):
     """Registro público de clientes externos (desde Laravel)"""
     if db.query(Cliente).filter(Cliente.email == payload.email).first():
         raise HTTPException(status_code=400, detail="El email ya está registrado")
@@ -40,13 +40,13 @@ async def registrar_cliente(payload: ClienteCreate, db: Session = Depends(get_db
 
 
 @router.get("/")
-async def listar_clientes(db: Session = Depends(get_db), _: str = Depends(verify_api_key)):
+async def listar_clientes(db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)):
     clientes = db.query(Cliente).order_by(Cliente.nombre).all()
     return {"status": "200", "total": len(clientes), "data": [_serialize(c) for c in clientes]}
 
 
 @router.get("/{id}")
-async def obtener_cliente(id: int, db: Session = Depends(get_db), _: str = Depends(verify_api_key)):
+async def obtener_cliente(id: int, db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)):
     c = db.query(Cliente).filter(Cliente.id == id).first()
     if not c:
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
@@ -55,7 +55,7 @@ async def obtener_cliente(id: int, db: Session = Depends(get_db), _: str = Depen
 
 @router.put("/{id}")
 async def actualizar_cliente(
-    id: int, payload: ClienteUpdate, db: Session = Depends(get_db), _: str = Depends(verify_api_key)
+    id: int, payload: ClienteUpdate, db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)
 ):
     c = db.query(Cliente).filter(Cliente.id == id).first()
     if not c:
@@ -78,7 +78,7 @@ async def actualizar_cliente(
 
 
 @router.delete("/{id}")
-async def eliminar_cliente(id: int, db: Session = Depends(get_db), _: str = Depends(verify_api_key)):
+async def eliminar_cliente(id: int, db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)):
     c = db.query(Cliente).filter(Cliente.id == id).first()
     if not c:
         raise HTTPException(status_code=404, detail="Cliente no encontrado")

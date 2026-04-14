@@ -7,7 +7,7 @@ from app.data.orm import (
     Autoparte, EstadoPedido, Usuario, Cliente
 )
 from app.models.pedidos import PedidoCreate, PedidoExternoCreate, PedidoCambioEstado
-from app.security.auth import verify_api_key
+from app.security.auth import get_current_subject
 
 router = APIRouter(prefix="/v1/pedidos", tags=["Pedidos"])
 
@@ -57,7 +57,7 @@ def _serialize_pedido_externo(p: PedidoExterno) -> dict:
 @router.get("/")
 async def listar_pedidos(
     db: Session = Depends(get_db),
-    _: str = Depends(verify_api_key),
+    _claims: dict = Depends(get_current_subject),
     usuario_id: Optional[int] = Query(None),
     estado_id: Optional[int] = Query(None),
     page: int = Query(1, ge=1),
@@ -81,7 +81,7 @@ async def listar_pedidos(
 
 
 @router.get("/{id}")
-async def obtener_pedido(id: int, db: Session = Depends(get_db), _: str = Depends(verify_api_key)):
+async def obtener_pedido(id: int, db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)):
     p = db.query(Pedido).filter(Pedido.id == id).first()
     if not p:
         raise HTTPException(status_code=404, detail="Pedido no encontrado")
@@ -89,7 +89,7 @@ async def obtener_pedido(id: int, db: Session = Depends(get_db), _: str = Depend
 
 
 @router.post("/")
-async def crear_pedido(payload: PedidoCreate, db: Session = Depends(get_db), _: str = Depends(verify_api_key)):
+async def crear_pedido(payload: PedidoCreate, db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)):
     if not db.query(Usuario).filter(Usuario.id == payload.usuario_id).first():
         raise HTTPException(status_code=400, detail="Usuario no encontrado")
 
@@ -131,7 +131,7 @@ async def crear_pedido(payload: PedidoCreate, db: Session = Depends(get_db), _: 
 
 @router.put("/{id}/estado")
 async def cambiar_estado_pedido(
-    id: int, payload: PedidoCambioEstado, db: Session = Depends(get_db), _: str = Depends(verify_api_key)
+    id: int, payload: PedidoCambioEstado, db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)
 ):
     p = db.query(Pedido).filter(Pedido.id == id).first()
     if not p:
@@ -149,7 +149,7 @@ async def cambiar_estado_pedido(
 @router.get("/externos/")
 async def listar_pedidos_externos(
     db: Session = Depends(get_db),
-    _: str = Depends(verify_api_key),
+    _claims: dict = Depends(get_current_subject),
     cliente_id: Optional[int] = Query(None),
     estado_id: Optional[int] = Query(None),
     page: int = Query(1, ge=1),
@@ -173,7 +173,7 @@ async def listar_pedidos_externos(
 
 
 @router.get("/externos/{id}")
-async def obtener_pedido_externo(id: int, db: Session = Depends(get_db), _: str = Depends(verify_api_key)):
+async def obtener_pedido_externo(id: int, db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)):
     p = db.query(PedidoExterno).filter(PedidoExterno.id == id).first()
     if not p:
         raise HTTPException(status_code=404, detail="Pedido externo no encontrado")
@@ -182,7 +182,7 @@ async def obtener_pedido_externo(id: int, db: Session = Depends(get_db), _: str 
 
 @router.post("/externos/")
 async def crear_pedido_externo(
-    payload: PedidoExternoCreate, db: Session = Depends(get_db), _: str = Depends(verify_api_key)
+    payload: PedidoExternoCreate, db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)
 ):
     if not db.query(Cliente).filter(Cliente.id == payload.cliente_id).first():
         raise HTTPException(status_code=400, detail="Cliente no encontrado")
@@ -230,7 +230,7 @@ async def crear_pedido_externo(
 
 @router.put("/externos/{id}/estado")
 async def cambiar_estado_pedido_externo(
-    id: int, payload: PedidoCambioEstado, db: Session = Depends(get_db), _: str = Depends(verify_api_key)
+    id: int, payload: PedidoCambioEstado, db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)
 ):
     p = db.query(PedidoExterno).filter(PedidoExterno.id == id).first()
     if not p:
@@ -244,7 +244,7 @@ async def cambiar_estado_pedido_externo(
 # ── Estados ───────────────────────────────────────────────────────────
 
 @router.get("/estados/")
-async def listar_estados(db: Session = Depends(get_db), _: str = Depends(verify_api_key)):
+async def listar_estados(db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)):
     estados = db.query(EstadoPedido).all()
     return {
         "status": "200",

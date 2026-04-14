@@ -4,7 +4,7 @@ from typing import Optional
 from app.data.db import get_db
 from app.data.orm import Inventario, Autoparte
 from app.models.autopartes import InventarioUpdate
-from app.security.auth import verify_api_key
+from app.security.auth import get_current_subject
 
 router = APIRouter(prefix="/v1/inventario", tags=["Inventario"])
 
@@ -28,7 +28,7 @@ def _serialize(inv: Inventario) -> dict:
 @router.get("/")
 async def listar_inventario(
     db: Session = Depends(get_db),
-    _: str = Depends(verify_api_key),
+    _claims: dict = Depends(get_current_subject),
     search: Optional[str] = Query(None),
     bajo_stock: bool = Query(False),
     page: int = Query(1, ge=1),
@@ -55,7 +55,7 @@ async def listar_inventario(
 
 
 @router.get("/{id}")
-async def obtener_inventario(id: int, db: Session = Depends(get_db), _: str = Depends(verify_api_key)):
+async def obtener_inventario(id: int, db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)):
     inv = db.query(Inventario).filter(Inventario.id == id).first()
     if not inv:
         raise HTTPException(status_code=404, detail="Inventario no encontrado")
@@ -64,7 +64,7 @@ async def obtener_inventario(id: int, db: Session = Depends(get_db), _: str = De
 
 @router.put("/{id}")
 async def actualizar_inventario(
-    id: int, payload: InventarioUpdate, db: Session = Depends(get_db), _: str = Depends(verify_api_key)
+    id: int, payload: InventarioUpdate, db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)
 ):
     inv = db.query(Inventario).filter(Inventario.id == id).first()
     if not inv:

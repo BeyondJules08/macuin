@@ -2,13 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.data.db import get_db
 from app.data.orm import Role
-from app.security.auth import verify_api_key
+from app.security.auth import get_current_subject
 
 router = APIRouter(prefix="/v1/roles", tags=["Roles"])
 
 
 @router.get("/")
-async def listar_roles(db: Session = Depends(get_db), _: str = Depends(verify_api_key)):
+async def listar_roles(db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)):
     roles = db.query(Role).all()
     return {
         "status": "200",
@@ -18,7 +18,7 @@ async def listar_roles(db: Session = Depends(get_db), _: str = Depends(verify_ap
 
 
 @router.get("/{id}")
-async def obtener_rol(id: int, db: Session = Depends(get_db), _: str = Depends(verify_api_key)):
+async def obtener_rol(id: int, db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)):
     rol = db.query(Role).filter(Role.id == id).first()
     if not rol:
         raise HTTPException(status_code=404, detail="Rol no encontrado")

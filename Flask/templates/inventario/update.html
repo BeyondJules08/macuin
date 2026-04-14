@@ -4,7 +4,7 @@
 <div class="mb-8"><h1 class="text-3xl font-bold text-gray-900">Actualizar Inventario</h1></div>
 <div class="bg-white rounded-lg shadow-md p-6 max-w-2xl">
     <div class="mb-6 p-4 bg-blue-50 rounded-lg">
-        <h2 class="text-lg font-bold">{{ inventario.autoparte.nombre }}</h2>
+        <h2 class="text-lg font-bold">{{ inventario.autoparte_nombre }}{% if inventario.autoparte_marca %} - {{ inventario.autoparte_marca }}{% endif %}</h2>
         <p class="text-sm text-gray-600">Stock actual: <span class="font-bold text-lg">{{ inventario.stock_actual }}</span></p>
     </div>
     <form method="POST">

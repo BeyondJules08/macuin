@@ -4,7 +4,7 @@ from typing import Optional
 from app.data.db import get_db
 from app.data.orm import Autoparte, Inventario, Categoria
 from app.models.autopartes import AutoparteCreate, AutoparteUpdate
-from app.security.auth import verify_api_key
+from app.security.auth import get_current_subject
 
 router = APIRouter(prefix="/v1/autopartes", tags=["Autopartes"])
 
@@ -36,7 +36,7 @@ def _serialize(a: Autoparte) -> dict:
 @router.get("/")
 async def listar_autopartes(
     db: Session = Depends(get_db),
-    _: str = Depends(verify_api_key),
+    _claims: dict = Depends(get_current_subject),
     search: Optional[str] = Query(None),
     categoria_id: Optional[int] = Query(None),
     solo_activos: bool = Query(True),
@@ -69,7 +69,7 @@ async def listar_autopartes(
 async def buscar_autopartes(
     q: str = Query(""),
     db: Session = Depends(get_db),
-    _: str = Depends(verify_api_key),
+    _claims: dict = Depends(get_current_subject),
 ):
     """Búsqueda rápida para autocomplete"""
     items = (
@@ -85,7 +85,7 @@ async def buscar_autopartes(
 
 
 @router.get("/{id}")
-async def obtener_autoparte(id: int, db: Session = Depends(get_db), _: str = Depends(verify_api_key)):
+async def obtener_autoparte(id: int, db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)):
     a = db.query(Autoparte).filter(Autoparte.id == id).first()
     if not a:
         raise HTTPException(status_code=404, detail="Autoparte no encontrada")
@@ -93,7 +93,7 @@ async def obtener_autoparte(id: int, db: Session = Depends(get_db), _: str = Dep
 
 
 @router.post("/")
-async def crear_autoparte(payload: AutoparteCreate, db: Session = Depends(get_db), _: str = Depends(verify_api_key)):
+async def crear_autoparte(payload: AutoparteCreate, db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)):
     if not db.query(Categoria).filter(Categoria.id == payload.categoria_id).first():
         raise HTTPException(status_code=400, detail="Categoría no encontrada")
     a = Autoparte(
@@ -119,7 +119,7 @@ async def crear_autoparte(payload: AutoparteCreate, db: Session = Depends(get_db
 
 @router.put("/{id}")
 async def actualizar_autoparte(
-    id: int, payload: AutoparteUpdate, db: Session = Depends(get_db), _: str = Depends(verify_api_key)
+    id: int, payload: AutoparteUpdate, db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)
 ):
     a = db.query(Autoparte).filter(Autoparte.id == id).first()
     if not a:
@@ -142,7 +142,7 @@ async def actualizar_autoparte(
 
 
 @router.delete("/{id}")
-async def desactivar_autoparte(id: int, db: Session = Depends(get_db), _: str = Depends(verify_api_key)):
+async def desactivar_autoparte(id: int, db: Session = Depends(get_db), _claims: dict = Depends(get_current_subject)):
     a = db.query(Autoparte).filter(Autoparte.id == id).first()
     if not a:
         raise HTTPException(status_code=404, detail="Autoparte no encontrada")

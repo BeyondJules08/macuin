@@ -29,11 +29,15 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        $result = $this->api->loginCliente($request->email, $request->password);
+        $result = $this->api->authenticateClient($request->email, $request->password);
 
         if ($result && isset($result['status']) && $result['status'] === '200') {
-            session(['cliente' => $result['data']]);
-            return redirect('/dashboard')->with('success', '¡Bienvenido ' . $result['data']['nombre'] . '!');
+            $clienteData = $result['data'];
+            session(['cliente' => $clienteData]);
+            // Store credentials for JWT auto-refresh
+            session(['_api_email' => $request->email]);
+            session(['_api_password' => $request->password]);
+            return redirect('/dashboard')->with('success', '¡Bienvenido ' . $clienteData['nombre'] . '!');
         }
 
         $msg = isset($result['detail']) ? $result['detail'] : 'Email o contraseña incorrectos.';
@@ -77,7 +81,7 @@ class AuthController extends Controller
 
     public function logout()
     {
-        session()->forget('cliente');
+        session()->forget(['cliente', '_api_email', '_api_password']);
         return redirect('/login')->with('success', 'Has cerrado sesión.');
     }
 }
