@@ -50,10 +50,10 @@ class FastApiService
     public function authenticateClient(string $email, string $password): ?array
     {
         try {
-            $response = Http::asJson()
+            $response = Http::asForm()
                 ->timeout(10)
                 ->post($this->baseUrl . '/v1/auth/login-cliente', [
-                    'email'    => $email,
+                    'username' => $email,
                     'password' => $password,
                 ]);
 
