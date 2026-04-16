@@ -1,22 +1,38 @@
 """OAuth2 + JWT security utilities for MACUIN FastAPI."""
+import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, OAuth2PasswordBearer
 import jwt
 from jwt.exceptions import InvalidTokenError
 from pwdlib import PasswordHash
-import os
+from pydantic import BaseModel
 
 # ── Configuration ─────────────────────────────────────────────────────
 
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "macuin_jwt_super_secret_key_change_in_prod_2024")
-ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+SECRET_KEY = "b29fb2689f12fc2ce6cb71418df9827766cd1a10a251b820b603a24d1f430373"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 password_hash = PasswordHash.recommended()
+DUMMY_HASH = password_hash.hash("585426")
 
 bearer_scheme = HTTPBearer(auto_error=False)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+
+# ── Pydantic models ───────────────────────────────────────────────────
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    username: str | None = None
+
+class User(BaseModel):
+    username: str
 
 
 # ── Password helpers ──────────────────────────────────────────────────
@@ -29,11 +45,24 @@ def verify_password(plain: str, hashed: str) -> bool:
     return password_hash.verify(plain, hashed)
 
 
+# ── Simple credential authentication ─────────────────────────────────
+
+def authenticate_user(username: str, password: str):
+    userAuth = secrets.compare_digest(username, "Julian")
+    passAuth = secrets.compare_digest(password, "585426")
+    if not (userAuth and passAuth):
+        return False
+    return User(username=username)
+
+
 # ── JWT token creation ────────────────────────────────────────────────
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
