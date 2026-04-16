@@ -24,8 +24,7 @@ def _get_token() -> str:
 
     r = requests.post(
         f"{API_URL}/v1/auth/login",
-        headers={"Content-Type": "application/json"},
-        json={"email": API_USER, "password": API_PASSWORD},
+        data={"username": API_USER, "password": API_PASSWORD},
         timeout=10,
     )
     r.raise_for_status()
@@ -153,8 +152,7 @@ def login_usuario(email, password):
     try:
         r = requests.post(
             f"{API_URL}/v1/auth/login",
-            headers={"Content-Type": "application/json"},
-            json={"email": email, "password": password},
+            data={"username": email, "password": password},
             timeout=10,
         )
         r.raise_for_status()

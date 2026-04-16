@@ -32,13 +32,16 @@ async def login_usuario(
     }
     access_token = create_access_token(data=token_data)
     return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "id": user.id,
-        "nombre": user.nombre,
-        "email": user.email,
-        "rol": user.rol.nombre,
-        "rol_id": user.rol_id,
+        "status": "200",
+        "data": {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "id": user.id,
+            "nombre": user.nombre,
+            "email": user.email,
+            "rol": user.rol.nombre,
+            "rol_id": user.rol_id,
+        },
     }
 
 
@@ -65,11 +68,14 @@ async def login_cliente(
     }
     access_token = create_access_token(data=token_data)
     return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "id": cliente.id,
-        "nombre": cliente.nombre,
-        "email": cliente.email,
-        "telefono": cliente.telefono,
-        "direccion": cliente.direccion,
+        "status": "200",
+        "data": {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "id": cliente.id,
+            "nombre": cliente.nombre,
+            "email": cliente.email,
+            "telefono": cliente.telefono,
+            "direccion": cliente.direccion,
+        },
     }
