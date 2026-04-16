@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import jwt
 from jwt.exceptions import InvalidTokenError
 from pwdlib import PasswordHash
@@ -16,9 +16,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "
 
 password_hash = PasswordHash.recommended()
 
-# OAuth2 scheme – the token URL points to the internal login endpoints
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="v1/auth/login", auto_error=False)
-oauth2_scheme_cliente = OAuth2PasswordBearer(tokenUrl="v1/auth/login-cliente", auto_error=False)
+bearer_scheme = HTTPBearer(auto_error=False)
 
 
 # ── Password helpers ──────────────────────────────────────────────────
@@ -54,15 +52,19 @@ def _decode_token(token: str) -> dict:
         )
 
 
-def get_current_usuario(token: str = Depends(oauth2_scheme)) -> dict:
-    """Extract and validate JWT for internal users (Flask)."""
-    if token is None:
+def _extract_token(credentials: Optional[HTTPAuthorizationCredentials]) -> str:
+    if credentials is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token de acceso no proporcionado",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    payload = _decode_token(token)
+    return credentials.credentials
+
+
+def get_current_usuario(credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme)) -> dict:
+    """Extract and validate JWT for internal users (Flask)."""
+    payload = _decode_token(_extract_token(credentials))
     if payload.get("tipo") != "usuario":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -71,15 +73,9 @@ def get_current_usuario(token: str = Depends(oauth2_scheme)) -> dict:
     return payload
 
 
-def get_current_cliente(token: str = Depends(oauth2_scheme_cliente)) -> dict:
+def get_current_cliente(credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme)) -> dict:
     """Extract and validate JWT for external clients (Laravel)."""
-    if token is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token de acceso no proporcionado",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    payload = _decode_token(token)
+    payload = _decode_token(_extract_token(credentials))
     if payload.get("tipo") != "cliente":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -88,12 +84,6 @@ def get_current_cliente(token: str = Depends(oauth2_scheme_cliente)) -> dict:
     return payload
 
 
-def get_current_subject(token: str = Depends(oauth2_scheme)) -> dict:
+def get_current_subject(credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme)) -> dict:
     """Generic token validator – accepts either user or client token."""
-    if token is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token de acceso no proporcionado",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    return _decode_token(token)
+    return _decode_token(_extract_token(credentials))
