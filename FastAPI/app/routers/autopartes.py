@@ -41,7 +41,7 @@ async def listar_autopartes(
     categoria_id: Optional[int] = Query(None),
     solo_activos: bool = Query(True),
     page: int = Query(1, ge=1),
-    per_page: int = Query(20, ge=1, le=100),
+    per_page: int = Query(20, ge=1, le=500),
 ):
     q = db.query(Autoparte)
     if solo_activos:

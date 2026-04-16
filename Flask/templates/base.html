@@ -47,13 +47,15 @@
                         </a>
                         {% endif %}
                         
-                        <a href="{{ url_for('pedidos_list') }}" class="px-3 py-2 rounded-md hover:bg-blue-700 transition">
+                        {% if current_user.rol.nombre in ['Administrador', 'Logística', 'Ventas', 'Almacén'] %}
+                        <a href="{{ url_for('pedidos_externos_list') }}" class="px-3 py-2 rounded-md hover:bg-blue-700 transition">
                             <i class="fas fa-shopping-cart mr-1"></i> Pedidos
                         </a>
+                        {% endif %}
 
-                        {% if current_user.rol.nombre in ['Administrador', 'Logística', 'Ventas'] %}
-                        <a href="{{ url_for('pedidos_externos_list') }}" class="px-3 py-2 rounded-md hover:bg-blue-700 transition">
-                            <i class="fas fa-globe mr-1"></i> Pedidos Externos
+                        {% if current_user.rol.nombre in ['Administrador', 'Ventas'] %}
+                        <a href="{{ url_for('clientes_list') }}" class="px-3 py-2 rounded-md hover:bg-blue-700 transition">
+                            <i class="fas fa-user-tie mr-1"></i> Clientes
                         </a>
                         {% endif %}
 
@@ -63,7 +65,7 @@
                         </a>
                         {% endif %}
 
-                        {% if current_user.rol.nombre in ['Administrador', 'Ventas', 'Logística'] %}
+                        {% if current_user.rol.nombre == 'Administrador' %}
                         <a href="{{ url_for('reportes_list') }}" class="px-3 py-2 rounded-md hover:bg-blue-700 transition">
                             <i class="fas fa-chart-bar mr-1"></i> Reportes
                         </a>
@@ -90,9 +92,11 @@
             {% if current_user.rol.nombre in ['Administrador', 'Almacén'] %}
             <a href="{{ url_for('inventario_list') }}" class="block px-3 py-2 rounded-md hover:bg-blue-700">Inventario</a>
             {% endif %}
-            <a href="{{ url_for('pedidos_list') }}" class="block px-3 py-2 rounded-md hover:bg-blue-700">Pedidos</a>
-            {% if current_user.rol.nombre in ['Administrador', 'Logística', 'Ventas'] %}
-            <a href="{{ url_for('pedidos_externos_list') }}" class="block px-3 py-2 rounded-md hover:bg-blue-700">Pedidos Externos</a>
+            {% if current_user.rol.nombre in ['Administrador', 'Logística', 'Ventas', 'Almacén'] %}
+            <a href="{{ url_for('pedidos_externos_list') }}" class="block px-3 py-2 rounded-md hover:bg-blue-700">Pedidos</a>
+            {% endif %}
+            {% if current_user.rol.nombre in ['Administrador', 'Ventas'] %}
+            <a href="{{ url_for('clientes_list') }}" class="block px-3 py-2 rounded-md hover:bg-blue-700">Clientes</a>
             {% endif %}
             {% if current_user.rol.nombre == 'Administrador' %}
             <a href="{{ url_for('usuarios_list') }}" class="block px-3 py-2 rounded-md hover:bg-blue-700">Usuarios</a>

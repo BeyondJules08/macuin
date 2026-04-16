@@ -78,13 +78,12 @@ def create_app():
         if request.method == "POST":
             email = request.form.get("email")
             password = request.form.get("password")
-            remember = bool(request.form.get("remember"))
             result = api.login_usuario(email, password)
             if result and result.get("status") == "200":
                 user_data = result["data"]
                 session["user_data"] = user_data
                 user = User(user_data)
-                login_user(user, remember=remember)
+                login_user(user)
                 flash(f"Bienvenido {user.nombre}!", "success")
                 next_page = request.args.get("next")
                 return redirect(next_page or url_for("dashboard"))
@@ -119,7 +118,7 @@ def create_app():
             return render_template(
                 "dashboard.html",
                 total_autopartes=stats["total_autopartes"],
-                total_pedidos=stats["total_pedidos"],
+                total_pedidos=stats["total_pedidos_externos"],
                 pedidos_pendientes=stats["pedidos_pendientes"],
                 productos_bajo_stock=productos_bajo_stock,
                 pedidos_recientes=stats["pedidos_recientes"],
@@ -263,83 +262,11 @@ def create_app():
 
         return render_template("inventario/update.html", inventario=inventario)
 
-    # ── Pedidos ───────────────────────────────────────────────────────
-
-    @app.route("/pedidos")
-    @login_required
-    def pedidos_list():
-        page = request.args.get("page", 1, type=int)
-        estado_id = request.args.get("estado", type=int)
-        usuario_id = None
-        if current_user.rol.nombre == "Ventas":
-            usuario_id = current_user.id
-        try:
-            pedidos = api.get_pedidos(page, app.config["ITEMS_PER_PAGE"], estado_id, usuario_id)
-            estados = api.get_estados_pedido()
-        except Exception as e:
-            flash(f"Error: {e}", "danger")
-            from api_client import Pagination
-            pedidos = Pagination([], 1, 20, 0)
-            estados = []
-        return render_template("pedidos/list.html", pedidos=pedidos, estados=estados, estado_id=estado_id)
-
-    @app.route("/pedidos/crear", methods=["GET", "POST"])
-    @login_required
-    @role_required("Administrador", "Ventas")
-    def pedidos_create():
-        if request.method == "POST":
-            autoparte_ids = request.form.getlist("autoparte_id[]")
-            cantidades = request.form.getlist("cantidad[]")
-            items = []
-            for ap_id, cant in zip(autoparte_ids, cantidades):
-                if ap_id and cant:
-                    items.append({"autoparte_id": int(ap_id), "cantidad": int(cant)})
-            if not items:
-                flash("Agrega al menos un producto.", "danger")
-            else:
-                try:
-                    api.create_pedido(current_user.id, items)
-                    flash("Pedido creado exitosamente.", "success")
-                    return redirect(url_for("pedidos_list"))
-                except Exception as e:
-                    flash(f"Error: {e}", "danger")
-
-        try:
-            autopartes = api.get_autopartes_activas()
-        except Exception:
-            autopartes = []
-        return render_template("pedidos/form.html", autopartes=autopartes)
-
-    @app.route("/pedidos/<int:id>")
-    @login_required
-    def pedidos_detail(id):
-        try:
-            pedido = api.get_pedido(id)
-        except Exception:
-            flash("Pedido no encontrado.", "danger")
-            return redirect(url_for("pedidos_list"))
-        if current_user.rol.nombre == "Ventas" and pedido.usuario_id != current_user.id:
-            flash("No tienes permisos para ver este pedido.", "danger")
-            return redirect(url_for("pedidos_list"))
-        return render_template("pedidos/detail.html", pedido=pedido)
-
-    @app.route("/pedidos/<int:id>/cambiar-estado", methods=["POST"])
-    @login_required
-    @role_required("Administrador", "Logística")
-    def pedidos_change_status(id):
-        nuevo_estado_id = request.form.get("estado_id", type=int)
-        try:
-            api.cambiar_estado_pedido(id, nuevo_estado_id)
-            flash("Estado del pedido actualizado.", "success")
-        except Exception as e:
-            flash(f"Error: {e}", "danger")
-        return redirect(url_for("pedidos_detail", id=id))
-
     # ── Pedidos externos ─────────────────────────────────────────────
 
     @app.route("/pedidos-externos")
     @login_required
-    @role_required("Administrador", "Logística", "Ventas")
+    @role_required("Administrador", "Logística", "Ventas", "Almacén")
     def pedidos_externos_list():
         page = request.args.get("page", 1, type=int)
         estado_id = request.args.get("estado", type=int)
@@ -358,9 +285,43 @@ def create_app():
             estado_id=estado_id,
         )
 
+    @app.route("/pedidos-externos/crear", methods=["GET", "POST"])
+    @login_required
+    @role_required("Administrador", "Ventas")
+    def pedidos_externos_create():
+        if request.method == "POST":
+            cliente_id = request.form.get("cliente_id", type=int)
+            autoparte_ids = request.form.getlist("autoparte_id[]")
+            cantidades = request.form.getlist("cantidad[]")
+            notas = request.form.get("notas", "")
+            items = []
+            for ap_id, cant in zip(autoparte_ids, cantidades):
+                if ap_id and cant:
+                    items.append({"autoparte_id": int(ap_id), "cantidad": int(cant)})
+            if not cliente_id:
+                flash("Debes seleccionar un cliente.", "danger")
+            elif not items:
+                flash("Agrega al menos un producto.", "danger")
+            else:
+                try:
+                    api.create_pedido_externo(cliente_id, items, notas)
+                    flash("Pedido creado exitosamente.", "success")
+                    return redirect(url_for("pedidos_externos_list"))
+                except Exception as e:
+                    flash(f"Error: {e}", "danger")
+        try:
+            clientes = api.get_clientes()
+        except Exception:
+            clientes = []
+        try:
+            autopartes = api.get_autopartes_activas()
+        except Exception:
+            autopartes = []
+        return render_template("pedidos_externos/form.html", clientes=clientes, autopartes=autopartes)
+
     @app.route("/pedidos-externos/<int:id>")
     @login_required
-    @role_required("Administrador", "Logística", "Ventas")
+    @role_required("Administrador", "Logística", "Ventas", "Almacén")
     def pedidos_externos_detail(id):
         try:
             pedido = api.get_pedido_externo(id)
@@ -372,15 +333,102 @@ def create_app():
 
     @app.route("/pedidos-externos/<int:id>/cambiar-estado", methods=["POST"])
     @login_required
-    @role_required("Administrador", "Logística")
+    @role_required("Administrador", "Logística", "Almacén")
     def pedidos_externos_change_status(id):
         nuevo_estado_id = request.form.get("estado_id", type=int)
+        rol = current_user.rol.nombre
+        # Enforce per-role state restrictions
+        if rol != "Administrador":
+            try:
+                estados = api.get_estados_pedido()
+                estado_nombre = next((e.nombre for e in estados if e.id == nuevo_estado_id), None)
+            except Exception as e:
+                flash(f"Error: {e}", "danger")
+                return redirect(url_for("pedidos_externos_detail", id=id))
+            if rol == "Logística" and estado_nombre != "Entregado":
+                flash("Logística solo puede cambiar el estado a 'Entregado'.", "warning")
+                return redirect(url_for("pedidos_externos_detail", id=id))
+            if rol == "Almacén" and estado_nombre != "En Proceso":
+                flash("Almacén solo puede cambiar el estado a 'En Proceso'.", "warning")
+                return redirect(url_for("pedidos_externos_detail", id=id))
         try:
             api.cambiar_estado_pedido_externo(id, nuevo_estado_id)
             flash("Estado del pedido actualizado.", "success")
         except Exception as e:
             flash(f"Error: {e}", "danger")
         return redirect(url_for("pedidos_externos_detail", id=id))
+
+    # ── Clientes externos ────────────────────────────────────────────
+
+    @app.route("/clientes")
+    @login_required
+    @role_required("Administrador", "Ventas")
+    def clientes_list():
+        try:
+            clientes = api.get_clientes()
+        except Exception as e:
+            flash(f"Error: {e}", "danger")
+            clientes = []
+        return render_template("clientes/list.html", clientes=clientes)
+
+    @app.route("/clientes/crear", methods=["GET", "POST"])
+    @login_required
+    @role_required("Administrador", "Ventas")
+    def clientes_create():
+        if request.method == "POST":
+            payload = {
+                "nombre":    request.form.get("nombre"),
+                "email":     request.form.get("email"),
+                "password":  request.form.get("password"),
+                "telefono":  request.form.get("telefono") or None,
+                "direccion": request.form.get("direccion") or None,
+            }
+            try:
+                api.create_cliente(payload)
+                flash("Cliente creado exitosamente.", "success")
+                return redirect(url_for("clientes_list"))
+            except Exception as e:
+                flash(f"Error: {e}", "danger")
+        return render_template("clientes/form.html")
+
+    @app.route("/clientes/<int:id>/editar", methods=["GET", "POST"])
+    @login_required
+    @role_required("Administrador", "Ventas")
+    def clientes_edit(id):
+        try:
+            cliente = api.get_cliente(id)
+        except Exception:
+            flash("Cliente no encontrado.", "danger")
+            return redirect(url_for("clientes_list"))
+        if request.method == "POST":
+            payload = {
+                "nombre":    request.form.get("nombre"),
+                "email":     request.form.get("email"),
+                "telefono":  request.form.get("telefono") or None,
+                "direccion": request.form.get("direccion") or None,
+                "activo":    request.form.get("activo") == "on",
+            }
+            new_pwd = request.form.get("password")
+            if new_pwd:
+                payload["password"] = new_pwd
+            try:
+                api.update_cliente(id, payload)
+                flash("Cliente actualizado exitosamente.", "success")
+                return redirect(url_for("clientes_list"))
+            except Exception as e:
+                flash(f"Error: {e}", "danger")
+        return render_template("clientes/form.html", cliente=cliente)
+
+    @app.route("/clientes/<int:id>/eliminar", methods=["POST"])
+    @login_required
+    @role_required("Administrador")
+    def clientes_delete(id):
+        try:
+            api.delete_cliente(id)
+            flash("Cliente eliminado exitosamente.", "success")
+        except Exception as e:
+            flash(f"Error: {e}", "danger")
+        return redirect(url_for("clientes_list"))
 
     # ── Usuarios ──────────────────────────────────────────────────────
 
@@ -461,13 +509,13 @@ def create_app():
 
     @app.route("/reportes")
     @login_required
-    @role_required("Administrador", "Ventas", "Logística")
+    @role_required("Administrador")
     def reportes_list():
         return render_template("reportes/list.html")
 
     @app.route("/reportes/<tipo>")
     @login_required
-    @role_required("Administrador", "Ventas", "Logística")
+    @role_required("Administrador")
     def reporte_descargar(tipo):
         tipos_validos = {"ventas", "inventario", "pedidos", "usuarios", "autopartes-mas-vendidas"}
         if tipo not in tipos_validos:
@@ -515,7 +563,7 @@ def create_app():
             stats = api.get_dashboard_stats()
             return jsonify({
                 "total_autopartes": stats["total_autopartes"],
-                "total_pedidos": stats["total_pedidos"],
+                "total_pedidos": stats["total_pedidos_externos"],
                 "bajo_stock": len(stats["bajo_stock_items"]),
             })
         except Exception:

@@ -3,8 +3,9 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
-from passlib.context import CryptContext
+import jwt
+from jwt.exceptions import InvalidTokenError
+from pwdlib import PasswordHash
 import os
 
 # ── Configuration ─────────────────────────────────────────────────────
@@ -13,7 +14,7 @@ SECRET_KEY = os.getenv("JWT_SECRET_KEY", "macuin_jwt_super_secret_key_change_in_
 ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+password_hash = PasswordHash.recommended()
 
 # OAuth2 scheme – the token URL points to the internal login endpoints
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="v1/auth/login", auto_error=False)
@@ -23,11 +24,11 @@ oauth2_scheme_cliente = OAuth2PasswordBearer(tokenUrl="v1/auth/login-cliente", a
 # ── Password helpers ──────────────────────────────────────────────────
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    return password_hash.hash(password)
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    return password_hash.verify(plain, hashed)
 
 
 # ── JWT token creation ────────────────────────────────────────────────
@@ -45,7 +46,7 @@ def _decode_token(token: str) -> dict:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
-    except JWTError:
+    except InvalidTokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token inválido o expirado",
@@ -62,7 +63,6 @@ def get_current_usuario(token: str = Depends(oauth2_scheme)) -> dict:
             headers={"WWW-Authenticate": "Bearer"},
         )
     payload = _decode_token(token)
-    # Validate that this is a user token (not a client token)
     if payload.get("tipo") != "usuario":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

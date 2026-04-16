@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Clientes - MACUIN{% endblock %}
+{% block content %}
+<div class="mb-8 flex justify-between items-center">
+    <h1 class="text-3xl font-bold text-gray-900">
+        <i class="fas fa-user-tie mr-2 text-indigo-600"></i>Clientes
+    </h1>
+    <a href="{{ url_for('clientes_create') }}"
+       class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg">
+        <i class="fas fa-plus mr-2"></i>Nuevo Cliente
+    </a>
+</div>
+
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Teléfono</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acciones</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+            {% for cliente in clientes %}
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ cliente.nombre }}</td>
+                <td class="px-6 py-4 text-sm text-gray-600">{{ cliente.email }}</td>
+                <td class="px-6 py-4 text-sm text-gray-600">{{ cliente.telefono or '—' }}</td>
+                <td class="px-6 py-4">
+                    {% if cliente.activo %}
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Activo</span>
+                    {% else %}
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Inactivo</span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4 text-center space-x-3">
+                    <a href="{{ url_for('clientes_edit', id=cliente.id) }}"
+                       class="text-blue-600 hover:text-blue-900" title="Editar">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    {% if current_user.rol.nombre == 'Administrador' %}
+                    <form method="POST" action="{{ url_for('clientes_delete', id=cliente.id) }}" class="inline">
+                        <button type="submit" class="text-red-600 hover:text-red-900" title="Eliminar"
+                                onclick="return confirm('¿Eliminar al cliente {{ cliente.nombre }}? Esta acción no se puede deshacer.')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="px-6 py-10 text-center text-gray-400">
+                    <i class="fas fa-users text-4xl mb-2 block"></i>No hay clientes registrados.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

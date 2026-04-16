@@ -266,35 +266,33 @@ def get_bajo_stock():
     return [to_obj(i) for i in data["data"]]
 
 
-# ── Pedidos ─────────────────────────────────────────────────────────
-
-def get_pedidos(page=1, per_page=20, estado_id=None, usuario_id=None):
-    params = {"page": page, "per_page": per_page}
-    if estado_id:
-        params["estado_id"] = estado_id
-    if usuario_id:
-        params["usuario_id"] = usuario_id
-    data = _get("/v1/pedidos/", params)
-    items = [to_obj(p) for p in data["data"]]
-    return Pagination(items, data["page"], data["per_page"], data["total"])
-
-
-def get_pedido(id):
-    data = _get(f"/v1/pedidos/{id}")
-    return to_obj(data["data"])
-
-
-def create_pedido(usuario_id, items):
-    return _post("/v1/pedidos/", {"usuario_id": usuario_id, "items": items})
-
-
-def cambiar_estado_pedido(id, estado_id):
-    return _put(f"/v1/pedidos/{id}/estado", {"estado_id": estado_id})
-
-
 def get_estados_pedido():
     data = _get("/v1/pedidos/estados/")
     return [to_obj(e) for e in data["data"]]
+
+
+# ── Clientes externos ───────────────────────────────────────────────
+
+def get_clientes():
+    data = _get("/v1/clientes/")
+    return [to_obj(c) for c in data["data"]]
+
+
+def get_cliente(id):
+    data = _get(f"/v1/clientes/{id}")
+    return to_obj(data["data"])
+
+
+def create_cliente(payload):
+    return _post("/v1/clientes/registro", payload)
+
+
+def update_cliente(id, payload):
+    return _put(f"/v1/clientes/{id}", payload)
+
+
+def delete_cliente(id):
+    return _delete(f"/v1/clientes/{id}")
 
 
 # ── Pedidos externos ────────────────────────────────────────────────
@@ -313,6 +311,10 @@ def get_pedido_externo(id):
     return to_obj(data["data"])
 
 
+def create_pedido_externo(cliente_id, items, notas=""):
+    return _post("/v1/pedidos/externos/", {"cliente_id": cliente_id, "items": items, "notas": notas})
+
+
 def cambiar_estado_pedido_externo(id, estado_id):
     return _put(f"/v1/pedidos/externos/{id}/estado", {"estado_id": estado_id})
 
@@ -321,15 +323,15 @@ def cambiar_estado_pedido_externo(id, estado_id):
 
 def get_dashboard_stats():
     try:
-        autopartes_data = _get("/v1/autopartes/", {"per_page": 1})
-        pedidos_data = _get("/v1/pedidos/", {"per_page": 1})
-        pendientes = _get("/v1/pedidos/", {"per_page": 1, "estado_id": _get_estado_id("Pendiente")})
-        bajo_stock = _get("/v1/inventario/", {"bajo_stock": True, "per_page": 5})
-        recientes = _get("/v1/pedidos/", {"per_page": 5})
-
         from datetime import datetime
+        autopartes_data = _get("/v1/autopartes/", {"per_page": 1})
+        pedidos_data = _get("/v1/pedidos/externos/", {"per_page": 1})
+        pendientes = _get("/v1/pedidos/externos/", {"per_page": 1, "estado_id": _get_estado_id("Pendiente")})
+        bajo_stock = _get("/v1/inventario/", {"bajo_stock": True, "per_page": 5})
+        recientes = _get("/v1/pedidos/externos/", {"per_page": 5})
+
         inicio_mes = datetime.now().replace(day=1, hour=0, minute=0, second=0)
-        todos_pedidos = _get("/v1/pedidos/", {"per_page": 1000})
+        todos_pedidos = _get("/v1/pedidos/externos/", {"per_page": 1000})
         ventas_mes = sum(
             float(p["total"])
             for p in todos_pedidos.get("data", [])
@@ -339,7 +341,7 @@ def get_dashboard_stats():
 
         return {
             "total_autopartes": autopartes_data["total"],
-            "total_pedidos": pedidos_data["total"],
+            "total_pedidos_externos": pedidos_data["total"],
             "pedidos_pendientes": pendientes["total"],
             "bajo_stock_items": [to_obj(i) for i in bajo_stock.get("data", [])[:5]],
             "pedidos_recientes": [to_obj(p) for p in recientes.get("data", [])[:5]],
@@ -347,7 +349,7 @@ def get_dashboard_stats():
         }
     except Exception:
         return {
-            "total_autopartes": 0, "total_pedidos": 0, "pedidos_pendientes": 0,
+            "total_autopartes": 0, "total_pedidos_externos": 0, "pedidos_pendientes": 0,
             "bajo_stock_items": [], "pedidos_recientes": [], "ventas_mes": 0,
         }
 

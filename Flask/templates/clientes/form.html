@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}{% if cliente %}Editar{% else %}Nuevo{% endif %} Cliente - MACUIN{% endblock %}
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">
+        <i class="fas fa-user-tie mr-2 text-indigo-600"></i>
+        {% if cliente %}Editar Cliente{% else %}Nuevo Cliente{% endif %}
+    </h1>
+</div>
+
+<div class="bg-white rounded-lg shadow-md p-6 max-w-2xl">
+    <form method="POST">
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Nombre Completo *</label>
+                <input type="text" name="nombre" required
+                       value="{% if cliente %}{{ cliente.nombre }}{% endif %}"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                <input type="email" name="email" required
+                       value="{% if cliente %}{{ cliente.email }}{% endif %}"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Contraseña {% if not cliente %}*{% else %}(dejar en blanco para no cambiar){% endif %}
+                </label>
+                <input type="password" name="password" {% if not cliente %}required{% endif %}
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+                <input type="text" name="telefono"
+                       value="{% if cliente and cliente.telefono %}{{ cliente.telefono }}{% endif %}"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                       placeholder="Opcional">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Dirección</label>
+                <textarea name="direccion" rows="2"
+                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                          placeholder="Opcional">{% if cliente and cliente.direccion %}{{ cliente.direccion }}{% endif %}</textarea>
+            </div>
+            {% if cliente %}
+            <div>
+                <label class="flex items-center">
+                    <input type="checkbox" name="activo" {% if cliente.activo %}checked{% endif %}
+                           class="h-4 w-4 text-blue-600 rounded">
+                    <span class="ml-2 text-sm text-gray-700">Cliente activo</span>
+                </label>
+            </div>
+            {% endif %}
+        </div>
+        <div class="mt-6 flex space-x-3">
+            <button type="submit"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">
+                <i class="fas fa-save mr-2"></i>Guardar
+            </button>
+            <a href="{{ url_for('clientes_list') }}"
+               class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg">
+                Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
