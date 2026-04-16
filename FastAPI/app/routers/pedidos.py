@@ -198,7 +198,7 @@ async def crear_pedido_externo(
         cliente_id=payload.cliente_id,
         estado_id=estado_pendiente.id,
         total=0,
-        notas=payload.notas,
+        notas=payload.notas or "",
     )
     db.add(pedido)
     db.flush()

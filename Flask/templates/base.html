@@ -50,7 +50,13 @@
                         <a href="{{ url_for('pedidos_list') }}" class="px-3 py-2 rounded-md hover:bg-blue-700 transition">
                             <i class="fas fa-shopping-cart mr-1"></i> Pedidos
                         </a>
-                        
+
+                        {% if current_user.rol.nombre in ['Administrador', 'Logística', 'Ventas'] %}
+                        <a href="{{ url_for('pedidos_externos_list') }}" class="px-3 py-2 rounded-md hover:bg-blue-700 transition">
+                            <i class="fas fa-globe mr-1"></i> Pedidos Externos
+                        </a>
+                        {% endif %}
+
                         {% if current_user.rol.nombre == 'Administrador' %}
                         <a href="{{ url_for('usuarios_list') }}" class="px-3 py-2 rounded-md hover:bg-blue-700 transition">
                             <i class="fas fa-users mr-1"></i> Usuarios
@@ -85,6 +91,9 @@
             <a href="{{ url_for('inventario_list') }}" class="block px-3 py-2 rounded-md hover:bg-blue-700">Inventario</a>
             {% endif %}
             <a href="{{ url_for('pedidos_list') }}" class="block px-3 py-2 rounded-md hover:bg-blue-700">Pedidos</a>
+            {% if current_user.rol.nombre in ['Administrador', 'Logística', 'Ventas'] %}
+            <a href="{{ url_for('pedidos_externos_list') }}" class="block px-3 py-2 rounded-md hover:bg-blue-700">Pedidos Externos</a>
+            {% endif %}
             {% if current_user.rol.nombre == 'Administrador' %}
             <a href="{{ url_for('usuarios_list') }}" class="block px-3 py-2 rounded-md hover:bg-blue-700">Usuarios</a>
             {% endif %}

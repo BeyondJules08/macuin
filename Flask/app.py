@@ -335,6 +335,53 @@ def create_app():
             flash(f"Error: {e}", "danger")
         return redirect(url_for("pedidos_detail", id=id))
 
+    # ── Pedidos externos ─────────────────────────────────────────────
+
+    @app.route("/pedidos-externos")
+    @login_required
+    @role_required("Administrador", "Logística", "Ventas")
+    def pedidos_externos_list():
+        page = request.args.get("page", 1, type=int)
+        estado_id = request.args.get("estado", type=int)
+        try:
+            pedidos = api.get_pedidos_externos(page, app.config["ITEMS_PER_PAGE"], estado_id)
+            estados = api.get_estados_pedido()
+        except Exception as e:
+            flash(f"Error: {e}", "danger")
+            from api_client import Pagination
+            pedidos = Pagination([], 1, 20, 0)
+            estados = []
+        return render_template(
+            "pedidos_externos/list.html",
+            pedidos=pedidos,
+            estados=estados,
+            estado_id=estado_id,
+        )
+
+    @app.route("/pedidos-externos/<int:id>")
+    @login_required
+    @role_required("Administrador", "Logística", "Ventas")
+    def pedidos_externos_detail(id):
+        try:
+            pedido = api.get_pedido_externo(id)
+            estados = api.get_estados_pedido()
+        except Exception:
+            flash("Pedido externo no encontrado.", "danger")
+            return redirect(url_for("pedidos_externos_list"))
+        return render_template("pedidos_externos/detail.html", pedido=pedido, estados=estados)
+
+    @app.route("/pedidos-externos/<int:id>/cambiar-estado", methods=["POST"])
+    @login_required
+    @role_required("Administrador", "Logística")
+    def pedidos_externos_change_status(id):
+        nuevo_estado_id = request.form.get("estado_id", type=int)
+        try:
+            api.cambiar_estado_pedido_externo(id, nuevo_estado_id)
+            flash("Estado del pedido actualizado.", "success")
+        except Exception as e:
+            flash(f"Error: {e}", "danger")
+        return redirect(url_for("pedidos_externos_detail", id=id))
+
     # ── Usuarios ──────────────────────────────────────────────────────
 
     @app.route("/usuarios")

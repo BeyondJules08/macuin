@@ -297,6 +297,26 @@ def get_estados_pedido():
     return [to_obj(e) for e in data["data"]]
 
 
+# ── Pedidos externos ────────────────────────────────────────────────
+
+def get_pedidos_externos(page=1, per_page=20, estado_id=None):
+    params = {"page": page, "per_page": per_page}
+    if estado_id:
+        params["estado_id"] = estado_id
+    data = _get("/v1/pedidos/externos/", params)
+    items = [to_obj(p) for p in data["data"]]
+    return Pagination(items, data["page"], data["per_page"], data["total"])
+
+
+def get_pedido_externo(id):
+    data = _get(f"/v1/pedidos/externos/{id}")
+    return to_obj(data["data"])
+
+
+def cambiar_estado_pedido_externo(id, estado_id):
+    return _put(f"/v1/pedidos/externos/{id}/estado", {"estado_id": estado_id})
+
+
 # ── Dashboard stats ─────────────────────────────────────────────────
 
 def get_dashboard_stats():

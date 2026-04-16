@@ -36,7 +36,7 @@ class PedidoCreate(BaseModel):
 class PedidoExternoCreate(BaseModel):
     cliente_id: int
     items: List[DetallePedidoCreate]
-    notas: Optional[str] = None
+    notas: str = ""
 
 
 class PedidoCambioEstado(BaseModel):

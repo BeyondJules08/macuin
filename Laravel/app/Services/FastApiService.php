@@ -208,8 +208,7 @@ class FastApiService
 
     public function crearPedidoExterno(int $clienteId, array $items, string $notas = ''): ?array
     {
-        $payload = ['cliente_id' => $clienteId, 'items' => $items];
-        if ($notas) $payload['notas'] = $notas;
+        $payload = ['cliente_id' => $clienteId, 'items' => $items, 'notas' => $notas];
         return $this->post('/v1/pedidos/externos/', $payload);
     }
 
